@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
+/*
+ * ProManager "Light Premium" design tokens.
+ * Raw palette lives on :root; @theme maps it to Tailwind utilities
+ * (bg-background, text-muted-foreground, border-border, rounded-md, …).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pm-background: #f7f8fa;
+  --pm-surface: #ffffff;
+  --pm-foreground: #111827;
+  --pm-muted: #6b7280;
+  --pm-muted-surface: #f3f4f6;
+  --pm-border: #e5e7eb;
+  --pm-primary: #2563eb;
+  --pm-primary-hover: #1d4ed8;
+  --pm-primary-soft: #eff6ff;
+  --pm-success: #16a34a;
+  --pm-success-soft: #f0fdf4;
+  --pm-warning: #d97706;
+  --pm-warning-soft: #fffbeb;
+  --pm-danger: #dc2626;
+  --pm-danger-soft: #fef2f2;
+  --pm-ring: #93c5fd;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--pm-background);
+  --color-surface: var(--pm-surface);
+  --color-foreground: var(--pm-foreground);
+  --color-muted-foreground: var(--pm-muted);
+  --color-muted: var(--pm-muted-surface);
+  --color-border: var(--pm-border);
+  --color-input: var(--pm-border);
+  --color-ring: var(--pm-ring);
+  --color-primary: var(--pm-primary);
+  --color-primary-hover: var(--pm-primary-hover);
+  --color-primary-soft: var(--pm-primary-soft);
+  --color-primary-foreground: #ffffff;
+  --color-success: var(--pm-success);
+  --color-success-soft: var(--pm-success-soft);
+  --color-warning: var(--pm-warning);
+  --color-warning-soft: var(--pm-warning-soft);
+  --color-danger: var(--pm-danger);
+  --color-danger-soft: var(--pm-danger-soft);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-xs: 0 1px 2px 0 rgb(17 24 39 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(17 24 39 / 0.06), 0 1px 2px -1px rgb(17 24 39 / 0.04);
+  --shadow-md: 0 8px 24px -6px rgb(17 24 39 / 0.12);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }
