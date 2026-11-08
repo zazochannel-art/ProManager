@@ -19,7 +19,7 @@ export function MobileNav({ navKeys }: { navKeys: NavKey[] }) {
           <Menu className="size-5" aria-hidden="true" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" closeLabel={t.shell.closeNavigation}>
+      <SheetContent side="left" className="bg-sidebar" closeLabel={t.shell.closeNavigation}>
         <SheetTitle className="sr-only">{t.shell.mainNavigation}</SheetTitle>
         <SheetDescription className="sr-only">{t.shell.mainNavigation}</SheetDescription>
         <div className="flex h-16 items-center px-5">

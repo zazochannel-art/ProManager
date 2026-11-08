@@ -18,7 +18,7 @@ export function NavList({ keys, onNavigate }: { keys: NavKey[]; onNavigate?: () 
         if (items.length === 0) return null;
         return (
           <div key={group}>
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t.nav.groups[group]}</p>
+            <p className={"px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"}>{t.nav.groups[group]}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => {
                 const Icon = item.icon;
@@ -30,8 +30,10 @@ export function NavList({ keys, onNavigate }: { keys: NavKey[]; onNavigate?: () 
                       onClick={onNavigate}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors",
-                        isActive ? "bg-primary-soft text-primary-hover" : "text-foreground/80 hover:bg-muted hover:text-foreground",
+                        "relative flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-surface text-primary-hover shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-brand"
+                          : "text-foreground/75 hover:bg-surface/70 hover:text-foreground",
                       )}
                     >
                       <Icon className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />

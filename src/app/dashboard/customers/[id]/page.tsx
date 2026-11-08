@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { PageHeader } from "@/components/shared/page-header";
+import { DetailHero, initials } from "@/components/shared/detail-hero";
+import { StatCard } from "@/components/shared/stat-card";
+import { Briefcase, CalendarDays, FolderKanban, Mail, Phone, UsersRound } from "lucide-react";
 import { requirePagePermission } from "@/lib/auth/organization-context";
 import { createClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
@@ -61,8 +63,26 @@ export default async function CustomerDetailPage({ params }: PageProps<"/dashboa
 
   return (
     <>
-      <PageHeader
+      <DetailHero
         title={customer.name}
+        avatar={initials(customer.name)}
+        meta={
+          <>
+            <Badge variant="primary">{t.customers.types[customer.type]}</Badge>
+            {customer.email ? (
+              <a className="inline-flex items-center gap-1.5 hover:text-foreground" href={`mailto:${customer.email}`}>
+                <Mail className="size-3.5" aria-hidden="true" />
+                {customer.email}
+              </a>
+            ) : null}
+            {customer.phone ? (
+              <a className="inline-flex items-center gap-1.5 hover:text-foreground" href={`tel:${customer.phone}`}>
+                <Phone className="size-3.5" aria-hidden="true" />
+                {customer.phone}
+              </a>
+            ) : null}
+          </>
+        }
         breadcrumb={<Breadcrumb label={t.common.breadcrumb} items={[{ label: t.customers.title, href: "/dashboard/customers" }, { label: customer.name }]} />}
         actions={
           <>
@@ -71,6 +91,16 @@ export default async function CustomerDetailPage({ params }: PageProps<"/dashboa
           </>
         }
       />
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {canSeeProjects ? (
+          <>
+            <StatCard label={t.customers.stats.activeProjects} value={String(projects.filter((p) => p.status === "active").length)} icon={FolderKanban} tone="primary" />
+            <StatCard label={t.customers.stats.totalProjects} value={String(projects.length)} icon={Briefcase} tone="neutral" />
+          </>
+        ) : null}
+        <StatCard label={t.customers.stats.contacts} value={String(contacts.length)} icon={UsersRound} tone="success" />
+        <StatCard label={t.customers.stats.since} value={formatDate(customer.created_at, locale)} icon={CalendarDays} tone="warning" />
+      </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card>

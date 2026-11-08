@@ -67,7 +67,7 @@ export function DataTable<TData extends RowData>({
   const pageCount = Math.max(1, table.getPageCount());
 
   return (
-    <div className={cn("rounded-lg border border-border bg-surface shadow-xs", className)}>
+    <div className={cn("rounded-xl border border-border/80 bg-surface shadow-sm", className)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((group) => (

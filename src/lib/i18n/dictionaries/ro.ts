@@ -222,6 +222,12 @@ export const ro = {
     finish: "Mergi la panoul de control",
   },
   customers: {
+    stats: {
+      activeProjects: "Proiecte active",
+      totalProjects: "Proiecte în total",
+      contacts: "Persoane de contact",
+      since: "Client din",
+    },
     edit: "Editează",
     editTitle: "Editează clientul",
     updated: "Clientul a fost actualizat.",
@@ -281,6 +287,16 @@ export const ro = {
     createdAt: "Adăugat",
   },
   projects: {
+    stats: {
+      progress: "Progres sarcini",
+      deadline: "Termen",
+      daysLeft: "{days} zile rămase",
+      dueToday: "Termenul e azi",
+      overdue: "Depășit cu {days} zile",
+      budgetUsed: "{percent} din buget consumat",
+      margin: "Marjă {percent}",
+      noTasks: "Nicio sarcină",
+    },
     edit: "Editează",
     editTitle: "Editează proiectul",
     updated: "Proiectul a fost actualizat.",

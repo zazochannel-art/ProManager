@@ -5,7 +5,7 @@ import { NavList } from "./nav-list";
 /** Desktop sidebar (sticky). The mobile equivalent is <MobileNav>. */
 export function Sidebar({ navKeys }: { navKeys: NavKey[] }) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-surface lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border/70 bg-sidebar lg:flex">
       <div className="flex h-16 items-center px-5">
         <Logo href="/dashboard" />
       </div>

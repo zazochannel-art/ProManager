@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils/cn";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span aria-hidden="true" className={cn("flex size-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-white", className)}>
+    <span aria-hidden="true" className={cn("flex size-8 items-center justify-center rounded-[10px] bg-brand text-sm font-bold text-white shadow-glow", className)}>
       P
     </span>
   );

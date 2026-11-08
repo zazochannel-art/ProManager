@@ -18,7 +18,7 @@ export const SheetContent = forwardRef<
 >(function SheetContent({ className, children, side = "left", closeLabel, ...props }, ref) {
   return (
     <SheetPrimitive.Portal>
-      <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/30" />
+      <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm" />
       <SheetPrimitive.Content
         ref={ref}
         className={cn(

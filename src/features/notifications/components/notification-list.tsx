@@ -26,7 +26,7 @@ export function NotificationList({ items, timeZone }: { items: NotificationPrevi
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface shadow-xs">
+    <div className="rounded-xl border border-border/80 bg-surface shadow-sm">
       {hasUnread ? (
         <div className="flex justify-end border-b border-border px-4 py-2">
           <Button variant="link" size="sm" disabled={pending} onClick={() => run(markAllNotificationsReadAction)}>
