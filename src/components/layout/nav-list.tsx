@@ -32,8 +32,8 @@ export function NavList({ keys, onNavigate }: { keys: NavKey[]; onNavigate?: () 
                       className={cn(
                         "relative flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-primary-soft text-primary-hover before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-brand"
-                          : "text-foreground/75 hover:bg-muted hover:text-foreground",
+                          ? "bg-surface text-primary-hover shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-brand"
+                          : "text-foreground/75 hover:bg-surface/70 hover:text-foreground",
                       )}
                     >
                       <Icon className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />

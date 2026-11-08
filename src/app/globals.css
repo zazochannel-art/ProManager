@@ -15,6 +15,7 @@
   --pm-primary: #4f46e5;
   --pm-primary-hover: #4338ca;
   --pm-primary-soft: #eef0ff;
+  --pm-sidebar: #e4e7f4;
   --pm-accent: #8b5cf6;
   --pm-success: #059669;
   --pm-success-soft: #ecfdf5;
@@ -37,6 +38,7 @@
   --color-primary: var(--pm-primary);
   --color-primary-hover: var(--pm-primary-hover);
   --color-primary-soft: var(--pm-primary-soft);
+  --color-sidebar: var(--pm-sidebar);
   --color-primary-foreground: #ffffff;
   --color-accent: var(--pm-accent);
   --color-success: var(--pm-success);
