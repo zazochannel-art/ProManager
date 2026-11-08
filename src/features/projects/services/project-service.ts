@@ -33,6 +33,20 @@ export async function listProjects(
   return { rows, total: count ?? 0 };
 }
 
+/** Active (non-archived) projects for pickers, e.g. linking a task. */
+export async function listProjectOptions(supabase: ServerSupabaseClient, organizationId: string): Promise<{ id: string; name: string }[]> {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id, name")
+    .eq("organization_id", organizationId)
+    .is("deleted_at", null)
+    .not("status", "in", "(completed,cancelled)")
+    .order("name")
+    .limit(500);
+  if (error) throw new Error(`Failed to list projects: ${error.message}`);
+  return data ?? [];
+}
+
 export type ProjectDetail = Pick<
   Tables<"projects">,
   | "id"

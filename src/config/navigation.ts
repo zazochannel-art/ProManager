@@ -57,7 +57,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, group: "overview", permission: "org.read", available: true },
   { key: "customers", href: "/dashboard/customers", icon: Users, group: "work", permission: "customers.read", available: true },
   { key: "projects", href: "/dashboard/projects", icon: Briefcase, group: "work", permission: "projects.read", available: true },
-  { key: "tasks", href: "/dashboard/tasks", icon: ListChecks, group: "work", permission: "tasks.read", available: false },
+  { key: "tasks", href: "/dashboard/tasks", icon: ListChecks, group: "work", permission: "tasks.read", available: true },
   { key: "calendar", href: "/dashboard/calendar", icon: CalendarDays, group: "work", permission: "calendar.read", available: false },
   { key: "estimates", href: "/dashboard/estimates", icon: FileText, group: "finance", permission: "estimates.read", available: false },
   { key: "invoices", href: "/dashboard/invoices", icon: Receipt, group: "finance", permission: "invoices.read", available: false },

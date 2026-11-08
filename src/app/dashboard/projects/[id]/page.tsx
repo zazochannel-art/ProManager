@@ -204,6 +204,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
               currentUserId={ctx.user.id}
               canManage={ctx.can("tasks.write")}
               canUpdateAssigned={ctx.can("tasks.update_assigned")}
+              today={today}
             />
           ) : null}
         </div>
