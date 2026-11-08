@@ -6,7 +6,7 @@
  * (bg-background, text-muted-foreground, border-border, rounded-md, …).
  */
 :root {
-  --pm-background: #f4f5fa;
+  --pm-background: #e9ebf3;
   --pm-surface: #ffffff;
   --pm-foreground: #0f172a;
   --pm-muted: #64748b;
@@ -15,7 +15,7 @@
   --pm-primary: #4f46e5;
   --pm-primary-hover: #4338ca;
   --pm-primary-soft: #eef0ff;
-  --pm-sidebar: #e4e7f4;
+  --pm-sidebar: #dfe2f0;
   --pm-accent: #8b5cf6;
   --pm-success: #059669;
   --pm-success-soft: #ecfdf5;
