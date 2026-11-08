@@ -8,6 +8,7 @@ test.describe("unauthorized access", () => {
     "/dashboard/projects/00000000-0000-4000-8000-000000000000",
     "/dashboard/tasks",
     "/dashboard/team",
+    "/dashboard/calendar",
     "/dashboard/settings",
     "/dashboard/invoices",
     "/onboarding",
