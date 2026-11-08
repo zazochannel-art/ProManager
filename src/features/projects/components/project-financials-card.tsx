@@ -3,7 +3,7 @@ import type { Dictionary } from "@/lib/i18n";
 import { interpolate } from "@/lib/i18n";
 import type { Locale } from "@/config/site";
 import { computeProjectProfitability } from "@/lib/calculations/profitability";
-import { isNegative } from "@/lib/calculations/decimal";
+import { div, isNegative, isZero, mul, sum, toNumberForDisplay } from "@/lib/calculations/decimal";
 import { formatMoney, formatPercent } from "@/lib/currency/format";
 import { cn } from "@/lib/utils/cn";
 import type { ProjectFinancials } from "../services/project-service";
@@ -40,10 +40,41 @@ export function ProjectFinancialsCard({ financials, t, locale }: { financials: P
             </div>
           ))}
         </dl>
+        <CostBreakdown
+          parts={[
+            { label: t.projects.financials.materialCosts, value: p.materialCosts, className: "bg-primary" },
+            { label: t.projects.financials.laborCosts, value: p.laborCosts, className: "bg-accent" },
+            { label: t.projects.financials.otherCosts, value: p.otherCosts, className: "bg-warning" },
+          ]}
+        />
         {p.excludedForeignCurrencyItems > 0 ? (
           <p className="mt-3 text-xs text-warning">{interpolate(t.projects.financials.excluded, { count: p.excludedForeignCurrencyItems })}</p>
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+/** Share of each cost type as a stacked bar (display only; amounts stay exact above). */
+function CostBreakdown({ parts }: { parts: { label: string; value: string; className: string }[] }) {
+  const total = sum(parts.map((part) => part.value));
+  if (isZero(total)) return null;
+  const share = (v: string) => toNumberForDisplay(mul(div(v, total), 100));
+  return (
+    <div className="mt-5">
+      <div className="flex h-2 overflow-hidden rounded-full bg-muted">
+        {parts.map((part) => (
+          <div key={part.label} className={part.className} style={{ width: `${share(part.value)}%` }} />
+        ))}
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        {parts.map((part) => (
+          <li key={part.label} className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true" className={cn("size-2 rounded-full", part.className)} />
+            {part.label} {share(part.value).toFixed(0)}%
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

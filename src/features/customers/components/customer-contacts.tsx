@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { initials } from "@/components/shared/detail-hero";
 import { FormAlert, FormField } from "@/components/forms/form-field";
 import { useActionForm } from "@/hooks/use-action-form";
 import { useRunAction } from "@/hooks/use-run-action";
@@ -40,25 +41,33 @@ export function CustomerContacts({ customerId, contacts, canWrite }: { customerI
           <ul className="divide-y divide-border">
             {contacts.map((contact) => (
               <li key={contact.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 text-sm">
-                  <p className="flex flex-wrap items-center gap-2 font-medium">
-                    {contact.full_name}
-                    {contact.is_primary ? <Badge variant="primary">{t.customers.contacts.primary}</Badge> : null}
-                  </p>
-                  {contact.position ? <p className="text-muted-foreground">{contact.position}</p> : null}
-                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-                    {contact.email ? (
-                      <a className="inline-flex items-center gap-1 hover:text-foreground" href={`mailto:${contact.email}`}>
-                        <Mail className="size-3.5" aria-hidden="true" />
-                        {contact.email}
-                      </a>
-                    ) : null}
-                    {contact.phone ? (
-                      <a className="inline-flex items-center gap-1 hover:text-foreground" href={`tel:${contact.phone}`}>
-                        <Phone className="size-3.5" aria-hidden="true" />
-                        {contact.phone}
-                      </a>
-                    ) : null}
+                <div className="flex min-w-0 gap-3 text-sm">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary"
+                  >
+                    {initials(contact.full_name)}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="flex flex-wrap items-center gap-2 font-medium">
+                      {contact.full_name}
+                      {contact.is_primary ? <Badge variant="primary">{t.customers.contacts.primary}</Badge> : null}
+                    </p>
+                    {contact.position ? <p className="text-muted-foreground">{contact.position}</p> : null}
+                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+                      {contact.email ? (
+                        <a className="inline-flex items-center gap-1 hover:text-foreground" href={`mailto:${contact.email}`}>
+                          <Mail className="size-3.5" aria-hidden="true" />
+                          {contact.email}
+                        </a>
+                      ) : null}
+                      {contact.phone ? (
+                        <a className="inline-flex items-center gap-1 hover:text-foreground" href={`tel:${contact.phone}`}>
+                          <Phone className="size-3.5" aria-hidden="true" />
+                          {contact.phone}
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
                 {canWrite ? (
@@ -90,8 +99,17 @@ function AddContactDialog({ customerId }: { customerId: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const empty: ContactInput = { fullName: "", position: "", email: "", phone: "", isPrimary: false };
-  const form = useForm<ContactInput>({ resolver: zodResolver(contactSchema), defaultValues: empty });
+  const empty: ContactInput = {
+    fullName: "",
+    position: "",
+    email: "",
+    phone: "",
+    isPrimary: false,
+  };
+  const form = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: empty,
+  });
   const { submit, pending, formError } = useActionForm(form, (values) => addContactAction(customerId, values), {
     onSuccess: () => {
       setOpen(false);

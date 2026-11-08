@@ -219,6 +219,12 @@ export const en: Dictionary = {
     finish: "Go to dashboard",
   },
   customers: {
+    stats: {
+      activeProjects: "Active projects",
+      totalProjects: "Projects in total",
+      contacts: "Contacts",
+      since: "Customer since",
+    },
     edit: "Edit",
     editTitle: "Edit customer",
     updated: "Customer updated.",
@@ -278,6 +284,16 @@ export const en: Dictionary = {
     createdAt: "Added",
   },
   projects: {
+    stats: {
+      progress: "Task progress",
+      deadline: "Deadline",
+      daysLeft: "{days} days left",
+      dueToday: "Due today",
+      overdue: "{days} days overdue",
+      budgetUsed: "{percent} of budget used",
+      margin: "Margin {percent}",
+      noTasks: "No tasks",
+    },
     edit: "Edit",
     editTitle: "Edit project",
     updated: "Project updated.",

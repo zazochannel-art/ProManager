@@ -12,7 +12,7 @@ export const DialogPortal = DialogPrimitive.Portal;
 
 export const DialogOverlay = forwardRef<ComponentRef<typeof DialogPrimitive.Overlay>, ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>>(
   function DialogOverlay({ className, ...props }, ref) {
-    return <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-foreground/30 backdrop-blur-[1px]", className)} {...props} />;
+    return <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm", className)} {...props} />;
   },
 );
 
@@ -26,7 +26,7 @@ export const DialogContent = forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border border-border bg-surface p-6 shadow-md focus:outline-none",
+          "fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl border border-border/80 bg-surface p-6 shadow-md focus:outline-none",
           className,
         )}
         {...props}

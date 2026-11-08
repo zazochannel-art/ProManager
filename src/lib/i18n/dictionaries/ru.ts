@@ -219,6 +219,12 @@ export const ru: Dictionary = {
     finish: "Перейти к панели управления",
   },
   customers: {
+    stats: {
+      activeProjects: "Активные проекты",
+      totalProjects: "Всего проектов",
+      contacts: "Контактные лица",
+      since: "Клиент с",
+    },
     edit: "Изменить",
     editTitle: "Изменить клиента",
     updated: "Клиент обновлён.",
@@ -278,6 +284,16 @@ export const ru: Dictionary = {
     createdAt: "Добавлен",
   },
   projects: {
+    stats: {
+      progress: "Выполнение задач",
+      deadline: "Срок",
+      daysLeft: "Осталось дней: {days}",
+      dueToday: "Срок сегодня",
+      overdue: "Просрочено на {days} дн.",
+      budgetUsed: "Использовано {percent} бюджета",
+      margin: "Маржа {percent}",
+      noTasks: "Нет задач",
+    },
     edit: "Изменить",
     editTitle: "Изменить проект",
     updated: "Проект обновлён.",

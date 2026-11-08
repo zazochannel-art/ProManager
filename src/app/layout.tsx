@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Inter } from "next/font/google";
 import { siteConfig } from "@/config/site";
 import { getI18n } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
 import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+const inter = Inter({ subsets: ["latin", "latin-ext", "cyrillic"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: siteConfig.name, template: `%s · ${siteConfig.name}` },
@@ -13,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F8FA",
+  themeColor: "#F4F5FA",
   width: "device-width",
   initialScale: 1,
 };
@@ -21,7 +24,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const { locale, t } = await getI18n();
   return (
-    <html lang={locale} className="h-full">
+    <html lang={locale} className={`h-full ${inter.variable}`}>
       <body className="min-h-full">
         <I18nProvider locale={locale} dictionary={t}>
           <TooltipProvider delayDuration={300}>

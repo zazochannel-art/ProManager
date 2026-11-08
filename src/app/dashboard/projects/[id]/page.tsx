@@ -4,7 +4,13 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { PageHeader } from "@/components/shared/page-header";
+import { DetailHero } from "@/components/shared/detail-hero";
+import { StatCard } from "@/components/shared/stat-card";
+import { CalendarClock, ListChecks, TrendingUp, Wallet, Building2, FolderKanban } from "lucide-react";
+import { computeProjectProfitability } from "@/lib/calculations/profitability";
+import { isNegative } from "@/lib/calculations/decimal";
+import { formatPercent } from "@/lib/currency/format";
+import { todayInTimeZone } from "@/lib/utils/dates";
 import { CURRENCIES, type CurrencyCode } from "@/config/site";
 import { requirePagePermission } from "@/lib/auth/organization-context";
 import { createClient } from "@/lib/supabase/server";
@@ -56,6 +62,21 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
   );
   const memberOptions = members.filter((m) => m.status === "active").map((m) => ({ userId: m.userId, name: m.name || m.email }));
 
+  const openTasks = taskRows.filter((task) => task.status !== "cancelled");
+  const doneTasks = openTasks.filter((task) => task.status === "done").length;
+  const progress = openTasks.length ? Math.round((doneTasks / openTasks.length) * 100) : 0;
+  const profitability = financials ? computeProjectProfitability(financials) : null;
+  const today = todayInTimeZone(ctx.settings.timezone);
+  const daysToEnd = project.end_date ? Math.round((Date.parse(project.end_date) - Date.parse(today)) / 86_400_000) : null;
+  const deadlineHint =
+    daysToEnd === null || status === "completed" || status === "cancelled"
+      ? undefined
+      : daysToEnd > 0
+        ? interpolate(t.projects.stats.daysLeft, { days: daysToEnd })
+        : daysToEnd === 0
+          ? t.projects.stats.dueToday
+          : interpolate(t.projects.stats.overdue, { days: -daysToEnd });
+
   const period =
     project.start_date || project.end_date
       ? `${formatDate(project.start_date, locale)} – ${formatDate(project.end_date, locale)}`
@@ -80,8 +101,21 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
 
   return (
     <>
-      <PageHeader
+      <DetailHero
         title={project.name}
+        icon={FolderKanban}
+        meta={
+          <>
+            <Badge variant={PROJECT_STATUS_VARIANT[status]}>{t.projects.statuses[status]}</Badge>
+            {project.code ? <span className="font-mono text-xs">{project.code}</span> : null}
+            {project.customer_id && project.customer_name ? (
+              <Link className="inline-flex items-center gap-1.5 hover:text-foreground" href={`/dashboard/customers/${project.customer_id}`}>
+                <Building2 className="size-3.5" aria-hidden="true" />
+                {project.customer_name}
+              </Link>
+            ) : null}
+          </>
+        }
         breadcrumb={<Breadcrumb label={t.common.breadcrumb} items={[{ label: t.projects.title, href: "/dashboard/projects" }, { label: project.name }]} />}
         actions={
           <>
@@ -106,12 +140,46 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
           </>
         }
       />
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label={t.projects.budget}
+          value={project.budget_amount === null ? t.projects.noBudget : formatMoney(project.budget_amount, currency, locale)}
+          hint={profitability?.budgetUsedPercent ? interpolate(t.projects.stats.budgetUsed, { percent: formatPercent(profitability.budgetUsedPercent, locale) }) : undefined}
+          icon={Wallet}
+          tone="primary"
+        />
+        {canSeeTasks ? (
+          <StatCard
+            label={t.projects.stats.progress}
+            value={`${progress}%`}
+            progress={progress}
+            hint={openTasks.length ? interpolate(t.tasks.progress, { done: doneTasks, total: openTasks.length }) : t.projects.stats.noTasks}
+            icon={ListChecks}
+            tone="success"
+          />
+        ) : null}
+        {profitability ? (
+          <StatCard
+            label={t.projects.financials.grossProfit}
+            value={formatMoney(profitability.grossProfit, currency, locale)}
+            hint={profitability.marginPercent ? interpolate(t.projects.stats.margin, { percent: formatPercent(profitability.marginPercent, locale) }) : undefined}
+            icon={TrendingUp}
+            tone={isNegative(profitability.grossProfit) ? "danger" : "success"}
+          />
+        ) : null}
+        <StatCard
+          label={t.projects.stats.deadline}
+          value={project.end_date ? formatDate(project.end_date, locale) : "—"}
+          hint={deadlineHint}
+          icon={CalendarClock}
+          tone={daysToEnd !== null && daysToEnd < 0 && deadlineHint ? "danger" : "warning"}
+        />
+      </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+            <CardHeader>
               <CardTitle>{t.projects.overview}</CardTitle>
-              <Badge variant={PROJECT_STATUS_VARIANT[status]}>{t.projects.statuses[status]}</Badge>
             </CardHeader>
             <CardContent>
               <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">

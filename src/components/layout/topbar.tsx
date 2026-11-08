@@ -24,7 +24,7 @@ export function Topbar({
   user: { name: string; email: string; roleLabel: string };
 }) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border bg-surface/90 px-3 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border/70 bg-surface/75 px-3 backdrop-blur-xl sm:px-6">
       <MobileNav navKeys={navKeys} />
       <OrganizationSwitcher organizations={organizations} activeId={activeOrganizationId} />
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
