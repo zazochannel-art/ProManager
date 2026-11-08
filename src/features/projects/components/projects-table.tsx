@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, dataTableFeatures, type DataTableColumn } from "@/components/data-table/data-table";
@@ -8,7 +9,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { interpolate } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils/dates";
 import { formatMoney } from "@/lib/currency/format";
-import type { ProjectStatus } from "../schemas/project";
+import { PROJECT_STATUS_VARIANT, type ProjectStatus } from "../schemas/project";
 
 export interface ProjectRow {
   id: string;
@@ -22,14 +23,6 @@ export interface ProjectRow {
   currency: string;
 }
 
-const STATUS_VARIANT: Record<ProjectStatus, "neutral" | "primary" | "success" | "warning" | "danger"> = {
-  planned: "neutral",
-  active: "primary",
-  on_hold: "warning",
-  completed: "success",
-  cancelled: "danger",
-};
-
 const helper = createColumnHelper<typeof dataTableFeatures, ProjectRow>();
 
 export function ProjectsTable({ rows }: { rows: ProjectRow[] }) {
@@ -42,7 +35,9 @@ export function ProjectsTable({ rows }: { rows: ProjectRow[] }) {
           sortFn: "text",
           cell: (info) => (
             <span className="flex flex-col">
-              <span className="font-medium">{info.getValue()}</span>
+              <Link href={`/dashboard/projects/${info.row.original.id}`} className="font-medium hover:text-primary hover:underline">
+                {info.getValue()}
+              </Link>
               {info.row.original.code ? <span className="text-xs text-muted-foreground">{info.row.original.code}</span> : null}
             </span>
           ),
@@ -53,7 +48,7 @@ export function ProjectsTable({ rows }: { rows: ProjectRow[] }) {
           enableSorting: false,
           cell: (info) => {
             const status = info.getValue() as ProjectStatus;
-            return <Badge variant={STATUS_VARIANT[status] ?? "neutral"}>{t.projects.statuses[status] ?? status}</Badge>;
+            return <Badge variant={PROJECT_STATUS_VARIANT[status] ?? "neutral"}>{t.projects.statuses[status] ?? status}</Badge>;
           },
         }),
         helper.accessor("start_date", { header: t.projects.startDate, sortFn: "datetime", cell: (info) => formatDate(info.getValue(), locale) }),

@@ -1,7 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("unauthorized access", () => {
-  for (const path of ["/dashboard", "/dashboard/customers", "/dashboard/settings", "/dashboard/invoices", "/onboarding"]) {
+  for (const path of [
+    "/dashboard",
+    "/dashboard/customers",
+    "/dashboard/customers/00000000-0000-4000-8000-000000000000",
+    "/dashboard/projects/00000000-0000-4000-8000-000000000000",
+    "/dashboard/settings",
+    "/dashboard/invoices",
+    "/onboarding",
+  ]) {
     test(`redirects ${path} to login and keeps the return path`, async ({ page }) => {
       await page.goto(path);
       await expect(page).toHaveURL((url) => url.pathname === "/login" && url.searchParams.get("next") === path);

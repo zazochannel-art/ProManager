@@ -10,7 +10,17 @@ import { useI18n } from "@/lib/i18n/client";
 import type { CurrencyCode } from "@/config/site";
 import { ProjectForm } from "./project-form";
 
-export function CreateProjectDialog({ customers, defaultCurrency }: { customers: { id: string; name: string }[]; defaultCurrency: CurrencyCode }) {
+export function CreateProjectDialog({
+  customers,
+  defaultCurrency,
+  defaultCustomerId,
+  label,
+}: {
+  customers: { id: string; name: string }[];
+  defaultCurrency: CurrencyCode;
+  defaultCustomerId?: string;
+  label?: string;
+}) {
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -19,7 +29,7 @@ export function CreateProjectDialog({ customers, defaultCurrency }: { customers:
       <DialogTrigger asChild>
         <Button>
           <Plus aria-hidden="true" />
-          {t.projects.new}
+          {label ?? t.projects.new}
         </Button>
       </DialogTrigger>
       <DialogContent closeLabel={t.common.close} className="max-w-xl">
@@ -30,6 +40,7 @@ export function CreateProjectDialog({ customers, defaultCurrency }: { customers:
         <ProjectForm
           customers={customers}
           defaultCurrency={defaultCurrency}
+          defaultCustomerId={defaultCustomerId}
           onSuccess={() => {
             setOpen(false);
             toast.success(t.projects.created);
