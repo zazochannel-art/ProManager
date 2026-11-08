@@ -46,9 +46,9 @@ export function OrganizationSwitcher({ organizations, activeId }: { organization
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="sm" className="max-w-[12rem] justify-between sm:max-w-[16rem]" disabled={pending} aria-label={t.shell.switchOrganization}>
+        <Button variant="secondary" size="sm" className="max-w-[9.5rem] justify-between sm:max-w-[16rem]" disabled={pending} aria-label={t.shell.switchOrganization}>
           <Building2 aria-hidden="true" />
-          <span className="truncate">{active?.name ?? t.shell.organization}</span>
+          <span className="min-w-0 truncate">{active?.name ?? t.shell.organization}</span>
           <ChevronsUpDown className="opacity-60" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>

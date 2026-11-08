@@ -36,13 +36,13 @@ export function StatCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-2 truncate text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <p className="mt-2 text-lg font-semibold tracking-tight tabular-nums break-words sm:text-2xl">{value}</p>
       {progress !== undefined ? (
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label={label}>
           <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} />
         </div>
       ) : null}
-      {hint ? <p className="mt-1.5 truncate text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }

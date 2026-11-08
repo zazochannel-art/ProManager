@@ -26,8 +26,10 @@ export function Topbar({
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border/70 bg-surface/75 px-3 backdrop-blur-xl sm:px-6">
       <MobileNav navKeys={navKeys} />
-      <OrganizationSwitcher organizations={organizations} activeId={activeOrganizationId} />
-      <div className="ml-auto flex items-center gap-1 sm:gap-2">
+      <div className="flex min-w-0 shrink">
+        <OrganizationSwitcher organizations={organizations} activeId={activeOrganizationId} />
+      </div>
+      <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-2">
         <GlobalSearch />
         <LanguageSwitcher compact />
         <NotificationCenter items={notifications} unreadCount={unreadCount} timeZone={timeZone} />

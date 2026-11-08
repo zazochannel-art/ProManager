@@ -42,7 +42,7 @@ export function DetailHero({
               {Icon ? <Icon className="size-6" /> : avatar}
             </span>
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{title}</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-balance break-words sm:text-[1.75rem]">{title}</h1>
               {meta ? <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground">{meta}</div> : null}
             </div>
           </div>

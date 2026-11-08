@@ -140,7 +140,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
           </>
         }
       />
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t.projects.budget}
           value={project.budget_amount === null ? t.projects.noBudget : formatMoney(project.budget_amount, currency, locale)}
