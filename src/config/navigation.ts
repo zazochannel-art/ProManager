@@ -63,7 +63,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "invoices", href: "/dashboard/invoices", icon: Receipt, group: "finance", permission: "invoices.read", available: false },
   { key: "payments", href: "/dashboard/payments", icon: CreditCard, group: "finance", permission: "payments.read", available: false },
   { key: "expenses", href: "/dashboard/expenses", icon: Wallet, group: "finance", permission: "expenses.read", available: false },
-  { key: "team", href: "/dashboard/team", icon: UsersRound, group: "operations", permission: "team.read", available: false },
+  { key: "team", href: "/dashboard/team", icon: UsersRound, group: "operations", permission: "team.read", available: true },
   { key: "inventory", href: "/dashboard/inventory", icon: Boxes, group: "operations", permission: "inventory.read", available: false },
   { key: "suppliers", href: "/dashboard/suppliers", icon: Truck, group: "operations", permission: "suppliers.read", available: false },
   { key: "reports", href: "/dashboard/reports", icon: BarChart3, group: "operations", permission: "reports.read", available: false },
