@@ -16,6 +16,9 @@ table live in the non-exposed `private` schema.
 | `…000800_documents_notifications` | documents, storage buckets + storage RLS, notifications, preferences, automation rules, client portal access |
 | `…000900_reporting` | `dashboard_summary()`, `project_financials()`, `search_organization()` |
 | `…001000_plan_limits` | customer/project plan limits, `organization_storage_bytes()` |
+| `20261108000100_hardening` | review fixes (plan fallbacks, admin role, HR documents, org deletion) |
+| `20261108000200_soft_delete_guard` | archiving customers/projects needs the delete permission |
+| `20261108000300_time_entry_rules` | time entries: duration derived from start/end; hourly cost taken from the employee record, only `time.manage` may set or change it |
 
 ## Conventions
 
