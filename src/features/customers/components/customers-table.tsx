@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, dataTableFeatures, type DataTableColumn } from "@/components/data-table/data-table";
@@ -25,7 +26,12 @@ export function CustomersTable({ rows }: { rows: CustomerRow[] }) {
   const columns = useMemo(
     () =>
       [
-        helper.accessor("name", { header: t.customers.name, sortFn: "text", cell: (info) => <span className="font-medium">{info.getValue()}</span> }),
+        helper.accessor("name", { header: t.customers.name, sortFn: "text", cell: (info) => (
+            <Link href={`/dashboard/customers/${info.row.original.id}`} className="font-medium hover:text-primary hover:underline">
+              {info.getValue()}
+            </Link>
+          ),
+        }),
         helper.accessor("type", {
           header: t.customers.type,
           enableSorting: false,

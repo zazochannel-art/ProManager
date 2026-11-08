@@ -11,6 +11,7 @@ import { useActionForm } from "@/hooks/use-action-form";
 import { useI18n } from "@/lib/i18n/client";
 import { translateValidationMessage } from "@/lib/validation/messages";
 import { actionErrorMessage } from "@/lib/validation/action-messages";
+import type { ActionResult } from "@/lib/validation/action-result";
 import { createProjectAction } from "../actions/project-actions";
 import { PROJECT_STATUSES, projectCreateSchema, type ProjectCreateInput } from "../schemas/project";
 
@@ -21,6 +22,8 @@ export function ProjectForm({
   onSuccess,
   submitLabel,
   secondaryAction,
+  initialValues,
+  action = createProjectAction,
 }: {
   customers: { id: string; name: string }[];
   defaultCurrency: CurrencyCode;
@@ -28,6 +31,9 @@ export function ProjectForm({
   onSuccess: (id: string) => void;
   submitLabel?: string;
   secondaryAction?: React.ReactNode;
+  /** Prefilled values when editing an existing project. */
+  initialValues?: Partial<ProjectCreateInput>;
+  action?: (values: ProjectCreateInput) => Promise<ActionResult<{ id: string }>>;
 }) {
   const { t } = useI18n();
   const form = useForm<ProjectCreateInput>({
@@ -41,9 +47,10 @@ export function ProjectForm({
       endDate: "",
       budget: "",
       currency: defaultCurrency,
+      ...initialValues,
     },
   });
-  const { submit, pending, formError } = useActionForm(form, createProjectAction, { onSuccess: ({ id }) => onSuccess(id) });
+  const { submit, pending, formError } = useActionForm(form, action, { onSuccess: ({ id }) => onSuccess(id) });
   const errors = form.formState.errors;
   const msg = (m?: string) => (m === "conflict" ? t.validation.invalidOption : translateValidationMessage(t, m));
 
