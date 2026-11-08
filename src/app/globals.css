@@ -23,11 +23,6 @@
   --pm-danger: #e11d48;
   --pm-danger-soft: #fff1f2;
   --pm-ring: #a5b4fc;
-  /* Sidebar (dark) */
-  --pm-sidebar: #0c1022;
-  --pm-sidebar-foreground: #c7cbe0;
-  --pm-sidebar-muted: #6b7194;
-  --pm-sidebar-active: #1c2142;
 }
 
 @theme inline {
@@ -44,10 +39,6 @@
   --color-primary-soft: var(--pm-primary-soft);
   --color-primary-foreground: #ffffff;
   --color-accent: var(--pm-accent);
-  --color-sidebar: var(--pm-sidebar);
-  --color-sidebar-foreground: var(--pm-sidebar-foreground);
-  --color-sidebar-muted: var(--pm-sidebar-muted);
-  --color-sidebar-active: var(--pm-sidebar-active);
   --color-success: var(--pm-success);
   --color-success-soft: var(--pm-success-soft);
   --color-warning: var(--pm-warning);

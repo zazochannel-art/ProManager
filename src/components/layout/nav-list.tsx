@@ -6,8 +6,7 @@ import { NAV_GROUP_ORDER, NAV_ITEMS, activeNavKey, type NavKey } from "@/config/
 import { useI18n } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
-export function NavList({ keys, onNavigate, tone = "light" }: { keys: NavKey[]; onNavigate?: () => void; tone?: "light" | "dark" }) {
-  const dark = tone === "dark";
+export function NavList({ keys, onNavigate }: { keys: NavKey[]; onNavigate?: () => void }) {
   const { t } = useI18n();
   const pathname = usePathname();
   const active = activeNavKey(pathname, keys);
@@ -19,7 +18,7 @@ export function NavList({ keys, onNavigate, tone = "light" }: { keys: NavKey[]; 
         if (items.length === 0) return null;
         return (
           <div key={group}>
-            <p className={cn("px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider", dark ? "text-sidebar-muted" : "text-muted-foreground")}>{t.nav.groups[group]}</p>
+            <p className={"px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"}>{t.nav.groups[group]}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => {
                 const Icon = item.icon;
@@ -32,16 +31,12 @@ export function NavList({ keys, onNavigate, tone = "light" }: { keys: NavKey[]; 
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "relative flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors",
-                        dark
-                          ? isActive
-                            ? "bg-sidebar-active text-white before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-brand"
-                            : "text-sidebar-foreground hover:bg-white/5 hover:text-white"
-                          : isActive
-                            ? "bg-primary-soft text-primary-hover"
-                            : "text-foreground/80 hover:bg-muted hover:text-foreground",
+                        isActive
+                          ? "bg-primary-soft text-primary-hover before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-brand"
+                          : "text-foreground/75 hover:bg-muted hover:text-foreground",
                       )}
                     >
-                      <Icon className={cn("size-4 shrink-0", isActive ? (dark ? "text-[#a5b4fc]" : "text-primary") : dark ? "text-sidebar-muted" : "text-muted-foreground")} aria-hidden="true" />
+                      <Icon className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
                       <span className="truncate">{t.nav[item.key]}</span>
                     </Link>
                   </li>
