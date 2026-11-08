@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MemoryRateLimitStore, checkRateLimit } from "@/lib/security/rate-limit";
 import { redact } from "@/lib/security/logger";
+import { pickClientIp } from "@/lib/security/client-ip";
 import { sanitizeFileName, sniffMimeType, validateUpload, UPLOAD_POLICIES } from "@/lib/validation/file";
 import { escapeHtml } from "@/lib/email/send";
 import { mapDatabaseError } from "@/lib/validation/action-result";
@@ -71,5 +72,18 @@ describe("misc security helpers", () => {
     expect(mapDatabaseError({ code: "23505" })).toBe("conflict");
     expect(mapDatabaseError({ code: "54000" })).toBe("limit_reached");
     expect(mapDatabaseError({ code: "XX000" })).toBe("server");
+  });
+});
+
+describe("client IP for rate limiting", () => {
+  it("ignores client-written X-Forwarded-For entries left of the trusted proxies", () => {
+    // Client sent "6.6.6.6"; the platform proxy appended the real address.
+    expect(pickClientIp("6.6.6.6, 203.0.113.7", null, 1)).toBe("203.0.113.7");
+    expect(pickClientIp("6.6.6.6, 203.0.113.7, 10.0.0.2", null, 2)).toBe("203.0.113.7");
+  });
+  it("falls back to X-Real-IP and ignores headers when no proxy is trusted", () => {
+    expect(pickClientIp(null, "198.51.100.4", 1)).toBe("198.51.100.4");
+    expect(pickClientIp("6.6.6.6", "198.51.100.4", 0)).toBe("unknown");
+    expect(pickClientIp(null, null, 1)).toBe("unknown");
   });
 });

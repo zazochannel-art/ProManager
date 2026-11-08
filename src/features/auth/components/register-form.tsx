@@ -14,14 +14,14 @@ import { signUpAction } from "../actions/auth-actions";
 import { registerSchema, type RegisterInput } from "../schemas/auth";
 import { authErrorMessage } from "../services/auth-errors";
 
-export function RegisterForm() {
+export function RegisterForm({ nextPath }: { nextPath?: string }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: "", email: "", password: "", confirmPassword: "", locale },
   });
-  const { submit, pending, formError } = useActionForm(form, signUpAction, {
+  const { submit, pending, formError } = useActionForm(form, (values) => signUpAction(values, nextPath), {
     onSuccess: ({ email }) => router.push(`/verify-email?email=${encodeURIComponent(email)}`),
   });
   const errors = form.formState.errors;
@@ -48,7 +48,7 @@ export function RegisterForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         {t.auth.haveAccount}{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link href={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : "/login"} className="font-medium text-primary hover:underline">
           {t.auth.signIn}
         </Link>
       </p>

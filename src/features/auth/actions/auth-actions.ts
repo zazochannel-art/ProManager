@@ -21,9 +21,11 @@ export async function signInAction(input: unknown, nextPath?: string): Promise<A
   if (!parsed.success) return validationFailure(parsed.error);
 
   const ip = await getClientIp();
-  const byIp = checkRateLimit("signIn", ip);
-  const byEmail = checkRateLimit("signIn", parsed.data.email);
-  if (!byIp.allowed || !byEmail.allowed) return { ...fail("rate_limited"), authError: "rate_limited" };
+  const email = parsed.data.email.toLowerCase();
+  const byPair = checkRateLimit("signIn", `${ip}|${email}`);
+  const byIp = checkRateLimit("signInIp", ip);
+  const byEmail = checkRateLimit("signInEmail", email);
+  if (!byPair.allowed || !byIp.allowed || !byEmail.allowed) return { ...fail("rate_limited"), authError: "rate_limited" };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
@@ -35,7 +37,7 @@ export async function signInAction(input: unknown, nextPath?: string): Promise<A
   redirect(safeRedirectPath(nextPath));
 }
 
-export async function signUpAction(input: unknown): Promise<AuthResult<{ email: string }>> {
+export async function signUpAction(input: unknown, nextPath?: string): Promise<AuthResult<{ email: string }>> {
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
@@ -43,14 +45,18 @@ export async function signUpAction(input: unknown): Promise<AuthResult<{ email: 
   if (!checkRateLimit("signUp", ip).allowed) return { ...fail("rate_limited"), authError: "rate_limited" };
 
   const locale = parsed.data.locale ?? (await getRequestLocale());
+  const continuePath = safeRedirectPath(nextPath, "/onboarding");
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${getPublicEnv().NEXT_PUBLIC_APP_URL}/auth/confirm?next=/onboarding`,
+      // After confirming, continue where the user came from (e.g. an invitation link).
+      emailRedirectTo: `${getPublicEnv().NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent(continuePath)}`,
       // Profile defaults only — never used for authorization.
-      data: { full_name: parsed.data.fullName, locale },
+      // signup_next is read by the confirmation e-mail template ({{ .Data.signup_next }})
+      // and validated again by /auth/confirm (safeRedirectPath).
+      data: { full_name: parsed.data.fullName, locale, signup_next: continuePath },
     },
   });
   if (error) {

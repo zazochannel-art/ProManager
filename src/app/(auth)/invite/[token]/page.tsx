@@ -29,7 +29,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
             <Link href={`/login?next=${next}`}>{t.auth.signIn}</Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link href="/register">{t.auth.createAccount}</Link>
+            <Link href={`/register?next=${next}`}>{t.auth.createAccount}</Link>
           </Button>
         </div>
       )}

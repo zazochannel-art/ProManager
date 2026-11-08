@@ -28,7 +28,7 @@ E-mail templates must link to the app's server-side handler using `token_hash`
 
 | Template | Link |
 |---|---|
-| Confirm signup | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding` |
+| Confirm signup | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .Data.signup_next }}` (the app stores where to continue, e.g. an invitation; empty falls back to `/onboarding`) |
 | Reset password | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password` |
 | Change e-mail | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=%2Fdashboard%2Fsettings%3Ftab%3Dprofile` |
 
@@ -42,6 +42,7 @@ Use the new API keys (Dashboard → Project Settings → API Keys):
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | build + runtime | `sb_publishable_…`, browser-safe |
 | `NEXT_PUBLIC_APP_URL` | build + runtime | public base URL, used in e-mail/invitation links |
 | `SUPABASE_SECRET_KEY` | runtime, server only | `sb_secret_…`; not needed by Phase 1–2 features; never prefix with `NEXT_PUBLIC_` |
+| `TRUSTED_PROXY_HOPS` | runtime, server only | Number of reverse proxies in front of the app (default `1`, right for Vercel or one load balancer; `0` if the app is exposed directly). Used to read the client IP for rate limiting. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | runtime, server only | optional; without them invitation links are shown to the admin instead of being e-mailed |
 
 `NEXT_PUBLIC_*` values are inlined at build time, so set them before `next build`.

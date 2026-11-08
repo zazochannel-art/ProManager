@@ -14,7 +14,10 @@ const limitsSchema = z
 export type PlanLimits = z.infer<typeof limitsSchema>;
 
 export interface SubscriptionOverview {
+  /** Subscription status, plus the derived "trial_expired" once a trial has ended. */
   status: string;
+  /** True when the limits come from the default plan (paused subscription or ended trial), as in the database. */
+  usingDefaultPlanLimits: boolean;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
   plan: { code: string; name: string; description: string | null; priceAmount: string; priceCurrency: string; interval: string; limits: PlanLimits };
@@ -46,7 +49,7 @@ export async function getSubscriptionOverview(supabase: ServerSupabaseClient, or
   if (error) throw new Error(`Failed to load subscription: ${error.message}`);
   if (!data) return null;
 
-  const plan = data.plans as unknown as {
+  type PlanRow = {
     code: string;
     name: string;
     description: string | null;
@@ -55,6 +58,21 @@ export async function getSubscriptionOverview(supabase: ServerSupabaseClient, or
     billing_interval: string;
     limits: unknown;
   };
+  let plan = data.plans as unknown as PlanRow;
+
+  // Mirrors private.effective_plan_id(): an ended trial or a paused
+  // subscription is limited by the default plan.
+  const trialExpired = data.status === "trialing" && data.trial_ends_at !== null && new Date(data.trial_ends_at).getTime() <= Date.now();
+  const usingDefaultPlanLimits = trialExpired || data.status === "paused";
+  if (usingDefaultPlanLimits) {
+    const { data: fallback, error: fallbackError } = await supabase
+      .from("plans")
+      .select("code, name, description, price_amount, price_currency, billing_interval, limits")
+      .eq("is_default", true)
+      .maybeSingle();
+    if (fallbackError) throw new Error(`Failed to load default plan: ${fallbackError.message}`);
+    if (fallback) plan = fallback as PlanRow;
+  }
 
   const [members, projects, customers, storage] = await Promise.all([
     countRows(supabase, "organization_members", organizationId),
@@ -66,7 +84,8 @@ export async function getSubscriptionOverview(supabase: ServerSupabaseClient, or
   const storageBytes = Number(storage.data ?? 0);
 
   return {
-    status: data.status,
+    status: trialExpired ? "trial_expired" : data.status,
+    usingDefaultPlanLimits,
     trialEndsAt: data.trial_ends_at,
     currentPeriodEnd: data.current_period_end,
     plan: {

@@ -1,5 +1,5 @@
 <!-- Links go through /auth/confirm (server-side verifyOtp with token_hash), see src/app/auth/confirm/route.ts -->
 <h2>ProManager</h2>
 <p>Confirmă adresa de e-mail pentru a-ți activa contul. · Confirm your e-mail address to activate your account. · Подтвердите адрес e-mail, чтобы активировать аккаунт.</p>
-<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding">Confirmă · Confirm · Подтвердить</a></p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .Data.signup_next }}">Confirmă · Confirm · Подтвердить</a></p>
 <p style="color:#6B7280;font-size:12px">Dacă nu ai creat un cont, ignoră acest mesaj. · If you did not sign up, ignore this e-mail. · Если вы не регистрировались, проигнорируйте письмо.</p>

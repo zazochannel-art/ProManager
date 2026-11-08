@@ -50,7 +50,12 @@ export interface RateLimitRule {
 }
 
 export const RATE_LIMITS = {
+  // Sign-in is limited per (IP + e-mail) pair and per IP. The per-e-mail limit
+  // alone is high, so a stranger cannot lock someone out by guessing badly;
+  // Supabase Auth adds its own limits behind this.
   signIn: { limit: 10, windowMs: 60_000 },
+  signInIp: { limit: 30, windowMs: 60_000 },
+  signInEmail: { limit: 100, windowMs: 60 * 60_000 },
   signUp: { limit: 5, windowMs: 10 * 60_000 },
   passwordReset: { limit: 5, windowMs: 10 * 60_000 },
   invite: { limit: 20, windowMs: 60 * 60_000 },

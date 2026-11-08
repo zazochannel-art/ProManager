@@ -32,6 +32,7 @@ export function assertCan(role: Role | null | undefined, permission: Permission)
 /** Roles a member with `actorRole` may assign to others. Owners only via owners. */
 export function assignableRoles(actorRole: Role): Role[] {
   if (actorRole === "owner") return [...ROLES];
-  if (actorRole === "admin") return ROLES.filter((r) => r !== "owner");
+  // Owner and admin are owner-managed (enforced by private.guard_member_changes).
+  if (actorRole === "admin") return ROLES.filter((r) => r !== "owner" && r !== "admin");
   return [];
 }

@@ -1984,6 +1984,10 @@ export type Database = {
         Args: { p_organization_id: string; p_months?: number };
         Returns: Json;
       };
+      delete_organization: {
+        Args: { p_organization_id: string; p_confirm_slug: string };
+        Returns: undefined;
+      };
       has_permission: {
         Args: { p_organization_id: string; p_permission: string };
         Returns: boolean;
@@ -2007,6 +2011,10 @@ export type Database = {
       search_organization: {
         Args: { p_organization_id: string; p_query: string; p_limit?: number };
         Returns: { entity_type: string; entity_id: string; title: string; subtitle: string }[];
+      };
+      update_regional_settings: {
+        Args: { p_organization_id: string; p_country_code: string; p_currency: string; p_locale: Database["public"]["Enums"]["app_locale"]; p_timezone: string };
+        Returns: undefined;
       };
       void_invoice: {
         Args: { p_invoice_id: string; p_reason: string };

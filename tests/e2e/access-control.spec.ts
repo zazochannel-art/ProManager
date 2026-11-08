@@ -32,6 +32,10 @@ test.describe("security headers", () => {
     expect(h["x-frame-options"]).toBe("DENY");
     expect(h["referrer-policy"]).toBeTruthy();
     expect(h["x-powered-by"]).toBeUndefined();
+    const csp = h["content-security-policy"] ?? "";
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("object-src 'none'");
   });
 
   test("health endpoint reveals no configuration", async ({ request }) => {

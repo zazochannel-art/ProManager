@@ -27,6 +27,8 @@ describe("permission checks", () => {
   it("only lets owners assign the owner role", () => {
     expect(assignableRoles("owner")).toContain("owner");
     expect(assignableRoles("admin")).not.toContain("owner");
+    expect(assignableRoles("admin")).not.toContain("admin");
+    expect(assignableRoles("admin")).toContain("manager");
     expect(assignableRoles("manager")).toEqual([]);
   });
 

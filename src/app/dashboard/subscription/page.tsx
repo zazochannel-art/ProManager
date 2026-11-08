@@ -56,8 +56,9 @@ export default async function SubscriptionPage() {
             </p>
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">{t.subscription.status}:</span>
-              <Badge variant={overview.status === "past_due" ? "danger" : overview.status === "active" ? "success" : "primary"}>{statusLabel}</Badge>
+              <Badge variant={overview.status === "past_due" || overview.status === "trial_expired" ? "danger" : overview.status === "active" ? "success" : "primary"}>{statusLabel}</Badge>
             </div>
+            {overview.usingDefaultPlanLimits ? <p className="text-sm text-warning">{t.subscription.defaultPlanLimits}</p> : null}
             {overview.status === "trialing" && overview.trialEndsAt ? (
               <p className="text-sm text-muted-foreground">{interpolate(t.subscription.trialEnds, { date: formatDate(overview.trialEndsAt, locale) })}</p>
             ) : null}

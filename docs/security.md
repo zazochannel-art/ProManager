@@ -33,9 +33,18 @@
 - New tenant tables: use `private.setup_tenant_table(...)`, add composite FKs, and extend the integration tests.
 - Destructive or financial operations go through database functions with permission checks and locks.
 
+## Hardening (migration 20261108000100)
+
+- **Plan limits fail closed.** `private.effective_plan_id()` uses the live subscription (active, past due, or a trial that has not ended) and otherwise the default plan, so a canceled, paused or expired-trial organization gets Free limits, never "no limits". Restoring a soft-deleted customer or project re-checks the limit; the member limit is serialised with an advisory lock; `storage_mb` is enforced on `documents`.
+- **HR documents** (`entity_type = 'employee'`, stored under `<org>/employee/...`) need `team.read` to read and `team.manage` to write or delete, in the table and in Storage. A check constraint keeps the path and the entity type consistent.
+- **Admin role is owner-managed.** Only owners grant admin (directly or by invitation) and only owners change, suspend or remove another admin. Admins may step down or leave. `accept_invitation` marks its transaction (`promanager.accepting_invitation`) so an invitee can join with the role chosen by the owner; clients cannot set that flag through the API.
+- **Soft-deleted organizations** are invisible to every RLS helper. Owners delete through `public.delete_organization(id, slug)` (Settings → Organization → Danger zone), which also cancels the subscription.
+- **Rate limiting** reads the client IP as the N-th X-Forwarded-For entry from the right (`TRUSTED_PROXY_HOPS`, default 1), so client-written entries are ignored. Sign-in is limited per IP + e-mail pair (10/min), per IP (30/min) and per e-mail (100/h), so a stranger cannot lock out a known address.
+- **Content-Security-Policy** limits scripts, styles, images and connections to the app and the Supabase project, and forbids framing, plugins and foreign form targets.
+
 ## Known limitations
 
-- The in-memory rate limiter is per instance (see deployment checklist).
-- No Content-Security-Policy yet (to be added with known third-party origins).
+- The in-memory rate limiter is per instance. Running more than one instance needs a shared store (implement `RateLimitStore`, e.g. Upstash Redis).
+- The CSP still allows inline scripts (`'unsafe-inline'`) because Next.js injects inline bootstrap scripts; a nonce-based CSP in the proxy is the next step.
 - Multi-factor authentication is not yet enforced for owners (Supabase MFA can be enabled in a later phase).
-- Soft-deleted customers/projects can be restored by users with write permission without re-checking plan limits.
+- RLS policies call `private.has_permission()` per row; this should be load-tested on large tables (100k+ rows) before launch.

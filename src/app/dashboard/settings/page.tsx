@@ -13,6 +13,7 @@ import { LogoUploader } from "@/features/settings/components/logo-uploader";
 import { ProfileForm } from "@/features/settings/components/profile-form";
 import { MembersPanel } from "@/features/settings/components/members-panel";
 import { listMembers, listPendingInvitations } from "@/features/settings/services/members-service";
+import { DeleteOrganizationCard } from "@/features/settings/components/delete-organization-card";
 import { InviteMemberForm } from "@/features/organizations/components/invite-member-form";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -73,6 +74,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
                   postalCode: o.postal_code ?? "",
                 }}
               />
+              {ctx.role === "owner" ? <DeleteOrganizationCard slug={o.slug} organizationName={o.name} /> : null}
             </CardContent>
           </Card>
         </TabsContent>

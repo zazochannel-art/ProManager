@@ -126,14 +126,14 @@ export async function saveRegionalSettingsAction(input: unknown): Promise<Action
     const v = parsed.data;
     const supabase = await createClient();
 
-    const [orgUpdate, settingsUpdate] = await Promise.all([
-      supabase.from("organizations").update({ country_code: v.countryCode }).eq("id", ctx.organization.id),
-      supabase
-        .from("organization_settings")
-        .update({ default_currency: v.currency, default_locale: v.locale, timezone: v.timezone })
-        .eq("organization_id", ctx.organization.id),
-    ]);
-    const error = orgUpdate.error ?? settingsUpdate.error;
+    // One database transaction: organization country + settings change together or not at all.
+    const { error } = await supabase.rpc("update_regional_settings", {
+      p_organization_id: ctx.organization.id,
+      p_country_code: v.countryCode,
+      p_currency: v.currency,
+      p_locale: v.locale,
+      p_timezone: v.timezone,
+    });
     if (error) return fail(mapDatabaseError(error));
 
     // The person configuring the workspace also switches their own UI language.
@@ -283,4 +283,29 @@ export async function acceptInvitationAction(token: unknown): Promise<ActionResu
   (await cookies()).set(ACTIVE_ORG_COOKIE, data, COOKIE_OPTIONS);
   revalidatePath("/", "layout");
   return ok({ organizationId: data });
+}
+
+/**
+ * Owner-only soft delete of the ACTIVE organization. The database function
+ * re-checks the owner role and the typed slug, cancels the subscription and
+ * hides the organization from every RLS check.
+ */
+export async function deleteOrganizationAction(confirmSlug: unknown): Promise<ActionResult> {
+  return guard(async () => {
+    const ctx = await getActionContext();
+    if (!ctx) return fail("unauthenticated");
+    if (ctx.role !== "owner") return fail("forbidden");
+    if (typeof confirmSlug !== "string" || confirmSlug.trim().toLowerCase() !== ctx.organization.slug) {
+      return fail("validation");
+    }
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("delete_organization", {
+      p_organization_id: ctx.organization.id,
+      p_confirm_slug: confirmSlug,
+    });
+    if (error) return fail(mapDatabaseError(error));
+    (await cookies()).delete(ACTIVE_ORG_COOKIE);
+    revalidatePath("/", "layout");
+    return ok(undefined);
+  });
 }
