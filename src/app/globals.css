@@ -91,3 +91,14 @@
     radial-gradient(90% 120% at 100% 0%, rgb(139 92 246 / 0.10) 0%, transparent 50%),
     linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
 }
+
+/* Estimates and invoices print through the browser (Print / Save as PDF). */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+  body {
+    background: #fff !important;
+  }
+}
