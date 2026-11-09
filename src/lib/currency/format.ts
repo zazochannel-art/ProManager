@@ -33,3 +33,8 @@ export function formatNumber(value: DecimalInput, locale: Locale, fractionDigits
 export function formatPercent(value: DecimalInput, locale: Locale): string {
   return `${formatNumber(value, locale, 1)} %`;
 }
+
+/** Stock quantities: up to three decimals, trailing zeros dropped ("64,5"). */
+export function formatQuantity(value: DecimalInput, locale: Locale): string {
+  return new Intl.NumberFormat(INTL_LOCALE[locale], { maximumFractionDigits: 3 }).format(toFixed(value, 3) as `${number}`);
+}
