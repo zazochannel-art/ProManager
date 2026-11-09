@@ -8,6 +8,8 @@ import { fail, mapDatabaseError, ok, validationFailure, type ActionResult } from
 import { uuidField } from "@/lib/validation/common";
 import { taskCreateSchema, taskStatusSchema } from "@/features/projects/schemas/project";
 import type { Permission } from "@/lib/permissions";
+import { interpolate } from "@/lib/i18n";
+import { notifyLater } from "@/features/notifications/services/notify";
 
 type Ctx = NonNullable<Awaited<ReturnType<typeof getActionContext>>>;
 
@@ -49,6 +51,22 @@ export async function createTaskAction(input: unknown): Promise<ActionResult<{ i
       .single();
     if (error) return fail(mapDatabaseError(error));
     revalidateTasks();
+    // The in-app notice comes from a database trigger; this adds the e-mail for those who chose it.
+    if (v.assigneeId && v.assigneeId !== ctx.user.id) {
+      const actor = ctx.profile.full_name || ctx.user.email;
+      const title = v.title;
+      notifyLater({
+        organizationId: ctx.organization.id,
+        event: "task.assigned",
+        userIds: [v.assigneeId],
+        inApp: false,
+        link: "/dashboard/tasks",
+        message: (t) => ({
+          title: interpolate(t.notifications.events["task.assigned"].title, { title }),
+          body: interpolate(t.notifications.events["task.assigned"].body, { actor }),
+        }),
+      });
+    }
     return ok({ id: data.id });
   });
 }

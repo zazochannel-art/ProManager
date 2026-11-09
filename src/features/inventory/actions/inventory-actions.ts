@@ -6,6 +6,9 @@ import { getI18n } from "@/lib/i18n/server";
 import { add, compare } from "@/lib/calculations/decimal";
 import { fail, mapDatabaseError, ok, validationFailure, type ActionResult } from "@/lib/validation/action-result";
 import { withDocumentContext } from "@/features/invoicing/actions/shared";
+import { interpolate } from "@/lib/i18n";
+import { formatQuantity } from "@/lib/currency/format";
+import { notifyLater } from "@/features/notifications/services/notify";
 import { itemSchema, movementSchema, signedQuantity, type ItemInput, type ItemValues, type MovementInput } from "../schemas/inventory";
 import { listItemMovements, type MovementRow } from "../services/inventory-service";
 
@@ -115,17 +118,19 @@ export async function recordMovementAction(itemId: string, input: MovementInput)
     if (!parsed.success) return validationFailure(parsed.error);
     const v = parsed.data;
     const supabase = await createClient();
-    const item = await supabase.from("inventory_items").select("id").eq("organization_id", ctx.organization.id).eq("id", id!).is("deleted_at", null).maybeSingle();
+    const item = await supabase.from("inventory_items").select("id, name, unit, reorder_level").eq("organization_id", ctx.organization.id).eq("id", id!).is("deleted_at", null).maybeSingle();
     if (item.error) return fail(mapDatabaseError(item.error));
     if (!item.data) return fail("not_found");
 
     const quantity = signedQuantity(v);
+    let onHandBefore: string | null = null;
     if (quantity.startsWith("-")) {
       // The ledger itself allows negative stock; the form refuses taking out more than is there.
       const levels = await supabase.from("inventory_stock_levels").select("quantity_on_hand").eq("organization_id", ctx.organization.id).eq("item_id", id!);
       if (levels.error) return fail(mapDatabaseError(levels.error));
       const onHand = (levels.data ?? []).reduce((acc, l) => add(acc, l.quantity_on_hand ?? 0), add(0, 0));
       if (compare(v.quantity, onHand) > 0) return fail("validation", { fieldErrors: { quantity: "insufficientStock" } });
+      onHandBefore = onHand.toString();
     }
 
     const warehouse = await defaultWarehouse(supabase, ctx.organization.id);
@@ -155,6 +160,24 @@ export async function recordMovementAction(itemId: string, input: MovementInput)
       if (updated.error) return fail(mapDatabaseError(updated.error));
     }
     revalidateInventory();
+    // Crossing the minimum on the way down tells the people who reorder.
+    const minimum = item.data.reorder_level;
+    if (onHandBefore !== null && minimum !== null && compare(onHandBefore, minimum) > 0) {
+      const left = add(onHandBefore, quantity).toString();
+      if (compare(left, minimum) <= 0) {
+        const { name, unit } = item.data;
+        notifyLater({
+          organizationId: ctx.organization.id,
+          event: "stock.low",
+          actorId: null,
+          link: "/dashboard/inventory?view=low",
+          message: (t, locale) => ({
+            title: interpolate(t.notifications.events["stock.low"].title, { item: name }),
+            body: interpolate(t.notifications.events["stock.low"].body, { quantity: formatQuantity(left, locale), unit, minimum: formatQuantity(minimum, locale) }),
+          }),
+        });
+      }
+    }
     return ok({ id: data.id });
   });
 }

@@ -15,6 +15,8 @@ import {
 } from "@/features/invoicing/services/invoicing-service";
 import type { EstimateStatus, InvoiceStatus } from "@/features/invoicing/schemas/document";
 import { isPortalToken, portalAccessStatus } from "../schemas/portal";
+import { interpolate } from "@/lib/i18n";
+import { notifyLater } from "@/features/notifications/services/notify";
 
 /**
  * Customer-facing reads for the client portal.
@@ -71,7 +73,7 @@ export const resolvePortalAccess = cache(async (token: string): Promise<PortalRe
   }
   const { data: row, error } = await admin
     .from("client_portal_access")
-    .select("id, organization_id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, can_view_documents, expires_at, revoked_at, last_accessed_at")
+    .select("id, organization_id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, can_view_documents, expires_at, revoked_at, last_accessed_at, created_by")
     .eq("token_hash", hashInvitationToken(token))
     .maybeSingle();
   if (error) throw new Error(`Failed to load portal access: ${error.message}`);
@@ -93,8 +95,26 @@ export const resolvePortalAccess = cache(async (token: string): Promise<PortalRe
   if (!organization.data || organization.data.deleted_at || !customer.data || customer.data.deleted_at) return { status: "revoked" };
 
   if (!row.last_accessed_at || Date.now() - new Date(row.last_accessed_at).getTime() > TOUCH_INTERVAL_MS) {
-    const touched = await admin.from("client_portal_access").update({ last_accessed_at: new Date().toISOString() }).eq("id", row.id);
+    let touch = admin.from("client_portal_access").update({ last_accessed_at: new Date().toISOString() }).eq("id", row.id);
+    // On the first visit, only the request that sets the time sends the notification.
+    if (!row.last_accessed_at) touch = touch.is("last_accessed_at", null);
+    const touched = await touch.select("id");
     if (touched.error) logger.warn("portal.touch_failed", { error: touched.error.message });
+    // The first visit tells whoever shared the link.
+    if (!row.last_accessed_at && touched.data?.length === 1 && row.created_by) {
+      const customerName = customer.data.name;
+      const email = row.email;
+      notifyLater({
+        organizationId: row.organization_id,
+        event: "portal.opened",
+        userIds: [row.created_by],
+        link: "/dashboard/client-portal",
+        message: (t) => ({
+          title: interpolate(t.notifications.events["portal.opened"].title, { customer: customerName }),
+          body: interpolate(t.notifications.events["portal.opened"].body, { email }),
+        }),
+      });
+    }
   }
 
   return {
