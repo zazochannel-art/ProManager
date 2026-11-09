@@ -10,9 +10,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
 import { interpolate } from "@/lib/i18n";
 import { formatMoney } from "@/lib/currency/format";
+import { formatAmountsByCurrency as amounts } from "@/lib/currency/amounts";
 import { parsePageParam } from "@/lib/utils/search-params";
 import { todayInTimeZone } from "@/lib/utils/dates";
-import type { Locale } from "@/config/site";
 import { listCustomerOptions } from "@/features/customers/services/customer-service";
 import {
   DOCUMENTS_PAGE_SIZE,
@@ -29,14 +29,6 @@ export const metadata: Metadata = { title: "Invoices" };
 
 const single = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const isView = (v: string | undefined): v is InvoiceView => (INVOICE_VIEWS as readonly (string | undefined)[]).includes(v);
-
-/** "1 200,00 MDL · 300,00 EUR" with the organization currency first. */
-function amounts(byCurrency: Record<string, string>, first: string, locale: Locale): string | null {
-  const entries = Object.entries(byCurrency).filter(([, v]) => Number(v) !== 0);
-  if (entries.length === 0) return null;
-  entries.sort(([a], [b]) => (a === first ? -1 : b === first ? 1 : a.localeCompare(b)));
-  return entries.map(([c, v]) => formatMoney(v, c, locale)).join(" · ");
-}
 
 export default async function InvoicesPage({ searchParams }: PageProps<"/dashboard/invoices">) {
   const ctx = await requirePagePermission("invoices.read");
