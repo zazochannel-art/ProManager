@@ -12,11 +12,12 @@ export const portalAccessSchema = z
     canViewInvoices: z.boolean().default(true),
     canViewEstimates: z.boolean().default(true),
     canViewProjects: z.boolean().default(true),
+    canViewDocuments: z.boolean().default(false),
     validDays: z.coerce
       .number()
       .refine((v): v is PortalValidity => (PORTAL_VALIDITY_DAYS as readonly number[]).includes(v), { error: "invalidOption" }),
   })
-  .refine((v) => v.canViewInvoices || v.canViewEstimates || v.canViewProjects, { error: "portalNothingShared", path: ["canViewInvoices"] });
+  .refine((v) => v.canViewInvoices || v.canViewEstimates || v.canViewProjects || v.canViewDocuments, { error: "portalNothingShared", path: ["canViewInvoices"] });
 export type PortalAccessInput = z.input<typeof portalAccessSchema>;
 
 export type PortalAccessStatus = "active" | "expired" | "revoked";

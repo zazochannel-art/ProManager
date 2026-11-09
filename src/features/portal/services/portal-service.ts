@@ -43,6 +43,7 @@ export interface PortalAccess {
   canViewInvoices: boolean;
   canViewEstimates: boolean;
   canViewProjects: boolean;
+  canViewDocuments: boolean;
   expiresAt: string;
   organization: JsonRecord & { name: string };
 }
@@ -70,7 +71,7 @@ export const resolvePortalAccess = cache(async (token: string): Promise<PortalRe
   }
   const { data: row, error } = await admin
     .from("client_portal_access")
-    .select("id, organization_id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, expires_at, revoked_at, last_accessed_at")
+    .select("id, organization_id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, can_view_documents, expires_at, revoked_at, last_accessed_at")
     .eq("token_hash", hashInvitationToken(token))
     .maybeSingle();
   if (error) throw new Error(`Failed to load portal access: ${error.message}`);
@@ -108,6 +109,7 @@ export const resolvePortalAccess = cache(async (token: string): Promise<PortalRe
       canViewInvoices: row.can_view_invoices,
       canViewEstimates: row.can_view_estimates,
       canViewProjects: row.can_view_projects,
+      canViewDocuments: row.can_view_documents,
       expiresAt: row.expires_at,
       organization: organization.data as JsonRecord & { name: string },
     },
@@ -149,7 +151,16 @@ export interface PortalProjectRow {
   site_address: string | null;
 }
 
+export interface PortalFileRow {
+  id: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+}
+
 export interface PortalOverview {
+  files: PortalFileRow[] | null;
   invoices: PortalInvoiceRow[] | null;
   estimates: PortalEstimateRow[] | null;
   projects: PortalProjectRow[] | null;
@@ -161,7 +172,7 @@ export interface PortalOverview {
 export async function getPortalOverview(admin: Admin, access: PortalAccess): Promise<PortalOverview> {
   const org = access.organizationId;
   const customer = access.customerId;
-  const [invoices, estimates, projects] = await Promise.all([
+  const [invoices, estimates, projects, files] = await Promise.all([
     access.canViewInvoices
       ? admin
           .from("invoice_overview")
@@ -194,8 +205,20 @@ export async function getPortalOverview(admin: Admin, access: PortalAccess): Pro
           .order("start_date", { ascending: false, nullsFirst: false })
           .limit(100)
       : null,
+    access.canViewDocuments
+      ? admin
+          .from("documents")
+          .select("id, file_name, mime_type, size_bytes, created_at")
+          .eq("organization_id", org)
+          .eq("customer_id", customer)
+          .eq("is_client_visible", true)
+          .eq("bucket", "documents")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(200)
+      : null,
   ]);
-  for (const r of [invoices, estimates, projects]) if (r?.error) throw new Error(`Failed to load portal data: ${r.error.message}`);
+  for (const r of [invoices, estimates, projects, files]) if (r?.error) throw new Error(`Failed to load portal data: ${r.error.message}`);
 
   const invoiceRows: PortalInvoiceRow[] | null = invoices
     ? (invoices.data ?? []).flatMap((i) =>
@@ -228,6 +251,7 @@ export async function getPortalOverview(admin: Admin, access: PortalAccess): Pro
     invoices: invoiceRows,
     estimates: estimates ? (estimates.data ?? []).map((e) => ({ ...e, total: str(e.total) })) : null,
     projects: projects ? (projects.data ?? []) : null,
+    files: files ? (files.data ?? []) : null,
     balance,
     overdue,
   };
@@ -340,4 +364,24 @@ export async function getPortalDocument(admin: Admin, access: PortalAccess, kind
     customer,
     lines,
   };
+}
+
+/** A one-minute download link for a file shared with this customer, or null when it is not theirs or not shared. */
+export async function getPortalFileUrl(admin: Admin, access: PortalAccess, id: string): Promise<string | null> {
+  if (!access.canViewDocuments) return null;
+  const { data, error } = await admin
+    .from("documents")
+    .select("storage_path, file_name")
+    .eq("organization_id", access.organizationId)
+    .eq("customer_id", access.customerId)
+    .eq("id", id)
+    .eq("is_client_visible", true)
+    .eq("bucket", "documents")
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to load document: ${error.message}`);
+  if (!data) return null;
+  const signed = await admin.storage.from("documents").createSignedUrl(data.storage_path, 60, { download: data.file_name });
+  if (signed.error || !signed.data) return null;
+  return signed.data.signedUrl;
 }

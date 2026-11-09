@@ -10,6 +10,7 @@ export interface PortalAccessRow {
   can_view_invoices: boolean;
   can_view_estimates: boolean;
   can_view_projects: boolean;
+  can_view_documents: boolean;
   expires_at: string;
   revoked_at: string | null;
   last_accessed_at: string | null;
@@ -21,7 +22,7 @@ export interface PortalAccessRow {
 export async function listPortalAccess(supabase: ServerSupabaseClient, organizationId: string): Promise<PortalAccessRow[]> {
   const { data, error } = await supabase
     .from("client_portal_access")
-    .select("id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, expires_at, revoked_at, last_accessed_at, created_at")
+    .select("id, customer_id, email, can_view_invoices, can_view_estimates, can_view_projects, can_view_documents, expires_at, revoked_at, last_accessed_at, created_at")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
     .limit(500);

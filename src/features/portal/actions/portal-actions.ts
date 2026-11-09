@@ -42,7 +42,7 @@ export async function createPortalAccessAction(input: PortalAccessInput): Promis
       can_view_invoices: v.canViewInvoices,
       can_view_estimates: v.canViewEstimates,
       can_view_projects: v.canViewProjects,
-      can_view_documents: false,
+      can_view_documents: v.canViewDocuments,
       expires_at: expiresAt,
       created_by: ctx.user.id,
     });

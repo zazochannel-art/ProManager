@@ -100,6 +100,7 @@ describe("portal service", () => {
       canViewInvoices: true,
       canViewEstimates: true,
       canViewProjects: false,
+      canViewDocuments: true,
       expiresAt: "2027-01-01T00:00:00Z",
       organization: { name: "Constructor SRL" },
     };
@@ -115,14 +116,32 @@ describe("portal service", () => {
     expect(data.projects).toBeNull();
     expect(data.balance).toEqual({ MDL: "1000.00" });
     expect(data.overdue).toBe(1);
-    expect(calls.map((c) => c.table)).toEqual(["invoice_overview", "estimates"]);
+    expect(data.files).toEqual([]);
+    expect(calls.map((c) => c.table)).toEqual(["invoice_overview", "estimates", "documents"]);
     for (const c of calls) {
       expect(c.filters).toContainEqual(["eq", "organization_id", ORG]);
       expect(c.filters).toContainEqual(["eq", "customer_id", CUSTOMER]);
+      if (c.table === "documents") {
+        expect(c.filters).toContainEqual(["eq", "is_client_visible", true]);
+        expect(c.filters).toContainEqual(["is", "deleted_at", null]);
+        continue;
+      }
       const statuses = c.filters.find((f) => f[0] === "in")?.[2] as string[];
       expect(statuses).not.toContain("draft");
     }
     expect(calls[0]!.filters.find((f) => f[0] === "in")?.[2]).not.toContain("void");
+  });
+
+  it("only hands out files that are shared with this customer", async () => {
+    const { getPortalFileUrl } = await import("@/features/portal/services/portal-service");
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const access = { id: "x", organizationId: ORG, customerId: CUSTOMER, customerName: "Ana", email: "a@b.md", canViewInvoices: true, canViewEstimates: false, canViewProjects: false, canViewDocuments: false, expiresAt: "2027-01-01T00:00:00Z", organization: { name: "C" } };
+    calls.length = 0;
+    expect(await getPortalFileUrl(createAdminClient(), access, "33333333-3333-4333-8333-333333333333")).toBeNull();
+    expect(calls).toHaveLength(0);
+    delete results.documents;
+    expect(await getPortalFileUrl(createAdminClient(), { ...access, canViewDocuments: true }, "33333333-3333-4333-8333-333333333333")).toBeNull();
+    expect(calls[0]!.filters).toEqual(expect.arrayContaining([["eq", "organization_id", ORG], ["eq", "customer_id", CUSTOMER], ["eq", "is_client_visible", true], ["is", "deleted_at", null]]));
   });
 });
 
@@ -157,11 +176,11 @@ describe("PortalAccessDialog", () => {
 
 describe("PortalAccessTable", () => {
   it("offers revoking only for active links", () => {
-    const row = { id: "a1", customer_name: "Ana", email: "ana@client.md", can_view_invoices: true, can_view_estimates: false, can_view_projects: true, expires_at: "2027-01-01T00:00:00Z", last_accessed_at: null, status: "active" as const };
+    const row = { id: "a1", customer_name: "Ana", email: "ana@client.md", can_view_invoices: true, can_view_estimates: false, can_view_projects: true, can_view_documents: true, expires_at: "2027-01-01T00:00:00Z", last_accessed_at: null, status: "active" as const };
     render(withI18n(<PortalAccessTable rows={[row, { ...row, id: "a2", customer_name: "Ion", status: "revoked" }]} />));
     expect(screen.getByRole("button", { name: "Revoke access for Ana" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Revoke access for Ion" })).not.toBeInTheDocument();
-    expect(screen.getAllByText("Invoices · Jobs")).toHaveLength(2);
+    expect(screen.getAllByText("Invoices · Jobs · Files")).toHaveLength(2);
     expect(screen.getByText("Revoked")).toBeInTheDocument();
   });
 });

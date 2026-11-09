@@ -72,7 +72,7 @@ function PortalAccessForm({ customers, onCancel, onSuccess }: { customers: Custo
   const { t } = useI18n();
   const form = useForm<PortalAccessInput>({
     resolver: zodResolver(portalAccessSchema) as never,
-    defaultValues: { customerId: "", email: "", canViewInvoices: true, canViewEstimates: true, canViewProjects: true, validDays: 90 },
+    defaultValues: { customerId: "", email: "", canViewInvoices: true, canViewEstimates: true, canViewProjects: true, canViewDocuments: false, validDays: 90 },
   });
   const { submit, pending, formError } = useActionForm(form, createPortalAccessAction, { onSuccess });
   const errors = form.formState.errors;
@@ -81,6 +81,7 @@ function PortalAccessForm({ customers, onCancel, onSuccess }: { customers: Custo
     ["canViewInvoices", t.clientPortal.shareInvoices],
     ["canViewEstimates", t.clientPortal.shareEstimates],
     ["canViewProjects", t.clientPortal.shareProjects],
+    ["canViewDocuments", t.clientPortal.shareDocuments],
   ] as const;
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
