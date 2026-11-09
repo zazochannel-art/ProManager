@@ -28,6 +28,11 @@ import { ArchiveProjectButton } from "@/features/projects/components/archive-pro
 import { ProjectStatusSelect } from "@/features/projects/components/project-status-select";
 import { ProjectTasks, type TaskRow } from "@/features/projects/components/project-tasks";
 import { ProjectFinancialsCard } from "@/features/projects/components/project-financials-card";
+import { ProjectPhases } from "@/features/projects/components/project-phases";
+import { ProjectMembers, type ProjectMemberRow } from "@/features/projects/components/project-members";
+import { ProjectTime } from "@/features/projects/components/project-time";
+import { listProjectMembers, listProjectPhases, listProjectTimeEntries } from "@/features/projects/services/project-work-service";
+import { PROJECT_MEMBER_ROLES } from "@/features/projects/schemas/project-work";
 
 export const metadata: Metadata = { title: "Project" };
 
@@ -46,11 +51,15 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
   const canWrite = ctx.can("projects.write");
   const canSeeTasks = ctx.can("tasks.read");
   const canSeeFinancials = ctx.can("dashboard.financials");
-  const [tasks, members, customers, financials] = await Promise.all([
+  const canSeeTime = ctx.can("time.read") || ctx.can("time.write_own") || ctx.can("time.manage");
+  const [tasks, members, customers, financials, phases, projectMembers, time] = await Promise.all([
     canSeeTasks ? listProjectTasks(supabase, ctx.organization.id, id) : Promise.resolve([]),
-    canSeeTasks ? listMembers(supabase, ctx.organization.id) : Promise.resolve([]),
+    listMembers(supabase, ctx.organization.id),
     canWrite ? listCustomerOptions(supabase, ctx.organization.id) : Promise.resolve([]),
     canSeeFinancials ? getProjectFinancials(supabase, ctx.organization.id, id) : Promise.resolve(null),
+    listProjectPhases(supabase, ctx.organization.id, id),
+    listProjectMembers(supabase, ctx.organization.id, id),
+    canSeeTime ? listProjectTimeEntries(supabase, ctx.organization.id, id) : Promise.resolve(null),
   ]);
 
   const status: ProjectStatus = isProjectStatus(project.status) ? project.status : "planned";
@@ -61,6 +70,11 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
       : [],
   );
   const memberOptions = members.filter((m) => m.status === "active").map((m) => ({ userId: m.userId, name: m.name || m.email }));
+  // Names for everybody who ever logged time or joined the team, including former members.
+  const allPeople = members.map((m) => ({ userId: m.userId, name: m.name || m.email }));
+  const projectMemberRows: ProjectMemberRow[] = projectMembers.flatMap((m) =>
+    (PROJECT_MEMBER_ROLES as readonly string[]).includes(m.project_role) ? [{ ...m, project_role: m.project_role as ProjectMemberRow["project_role"] }] : [],
+  );
 
   const openTasks = taskRows.filter((task) => task.status !== "cancelled");
   const doneTasks = openTasks.filter((task) => task.status === "done").length;
@@ -196,6 +210,12 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
             </CardContent>
           </Card>
 
+          <ProjectPhases
+            projectId={project.id}
+            phases={phases.map((p) => ({ ...p, planned_hours: p.planned_hours === null ? null : String(p.planned_hours) }))}
+            canManage={canWrite}
+          />
+
           {canSeeTasks ? (
             <ProjectTasks
               projectId={project.id}
@@ -204,10 +224,35 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
               currentUserId={ctx.user.id}
               canManage={ctx.can("tasks.write")}
               canUpdateAssigned={ctx.can("tasks.update_assigned")}
+              today={today}
+            />
+          ) : null}
+
+          {time ? (
+            <ProjectTime
+              projectId={project.id}
+              entries={time.rows}
+              totalMinutes={time.totalMinutes}
+              billableMinutes={time.billableMinutes}
+              people={allPeople}
+              currentUserId={ctx.user.id}
+              today={today}
+              canLogOwn={ctx.can("time.write_own")}
+              canManage={ctx.can("time.manage")}
+              seesEveryone={ctx.can("time.read")}
             />
           ) : null}
         </div>
-        <div className="flex flex-col gap-6">{financials ? <ProjectFinancialsCard financials={financials} t={t} locale={locale} /> : null}</div>
+        <div className="flex flex-col gap-6">
+          {financials ? <ProjectFinancialsCard financials={financials} t={t} locale={locale} /> : null}
+          <ProjectMembers
+            projectId={project.id}
+            members={projectMemberRows}
+            people={allPeople}
+            active={memberOptions}
+            canManage={canWrite}
+          />
+        </div>
       </div>
     </>
   );

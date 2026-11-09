@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 import { I18nProvider } from "@/lib/i18n/client";
 import { en } from "@/lib/i18n/dictionaries/en";
 
-const createProjectTaskAction = vi.fn(async () => ({ ok: true as const, data: { id: "t-new" } }));
-vi.mock("@/features/projects/actions/project-actions", () => ({
-  createProjectTaskAction: (...args: unknown[]) => createProjectTaskAction(...(args as [])),
-  deleteProjectTaskAction: vi.fn(),
+const createTaskAction = vi.fn(async () => ({ ok: true as const, data: { id: "t-new" } }));
+vi.mock("@/features/tasks/actions/task-actions", () => ({
+  createTaskAction: (...args: unknown[]) => createTaskAction(...(args as [])),
+  deleteTaskAction: vi.fn(),
   setTaskStatusAction: vi.fn(),
 }));
 vi.mock("@/features/customers/actions/customer-actions", () => ({ addContactAction: vi.fn(), deleteContactAction: vi.fn() }));
@@ -47,10 +47,10 @@ describe("ProjectTasks", () => {
     expect(screen.getByText(en.tasks.empty)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: en.tasks.add }));
     expect(await screen.findByText(en.validation.required)).toBeInTheDocument();
-    expect(createProjectTaskAction).not.toHaveBeenCalled();
+    expect(createTaskAction).not.toHaveBeenCalled();
     await user.type(screen.getByLabelText(en.tasks.taskTitle), "Install sockets");
     await user.click(screen.getByRole("button", { name: en.tasks.add }));
-    await vi.waitFor(() => expect(createProjectTaskAction).toHaveBeenCalledWith(PROJECT, expect.objectContaining({ title: "Install sockets", priority: "medium" })));
+    await vi.waitFor(() => expect(createTaskAction).toHaveBeenCalledWith(expect.objectContaining({ title: "Install sockets", priority: "medium", projectId: PROJECT })));
   });
 });
 

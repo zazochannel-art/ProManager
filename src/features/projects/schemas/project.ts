@@ -41,15 +41,19 @@ export type TaskStatus = (typeof TASK_STATUSES)[number];
 export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
+const optionalReference = z
+  .string()
+  .optional()
+  .transform((v) => (v && v !== "none" ? v : undefined))
+  .pipe(z.uuid({ error: "invalidOption" }).optional());
+
 export const taskCreateSchema = z.object({
   title: requiredText(1, 300),
+  /** Optional link to a project; the composite FK rejects ids from another organization. */
+  projectId: optionalReference,
   priority: z.enum(TASK_PRIORITIES, { error: "invalidOption" }),
   dueDate: optionalDate,
-  assigneeId: z
-    .string()
-    .optional()
-    .transform((v) => (v && v !== "none" ? v : undefined))
-    .pipe(z.uuid({ error: "invalidOption" }).optional()),
+  assigneeId: optionalReference,
 });
 
 export type TaskCreateInput = z.input<typeof taskCreateSchema>;

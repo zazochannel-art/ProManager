@@ -28,8 +28,11 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
       >
         {t.shell.skipToContent}
       </a>
-      <Sidebar navKeys={navKeys} />
+      <div className="contents print:hidden">
+        <Sidebar navKeys={navKeys} />
+      </div>
       <div className="flex min-w-0 flex-1 flex-col">
+        <div className="contents print:hidden">
         <Topbar
           navKeys={navKeys}
           organizations={ctx.memberships.map((m) => ({ id: m.organizationId, name: m.organizationName, roleLabel: t.roles[m.role] }))}
@@ -46,7 +49,8 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           timeZone={ctx.settings.timezone}
           user={{ name: ctx.profile.full_name ?? "", email: ctx.profile.email ?? ctx.user.email ?? "", roleLabel: t.roles[ctx.role] }}
         />
-        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 lg:py-8">
+        </div>
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
           {children}
         </main>
       </div>

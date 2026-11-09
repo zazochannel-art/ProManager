@@ -6,3 +6,12 @@ import { cleanup } from "@testing-library/react";
 vi.mock("server-only", () => ({}));
 
 afterEach(() => cleanup());
+
+// jsdom has no ResizeObserver; Radix primitives (e.g. Checkbox) measure themselves with it.
+if (!("ResizeObserver" in globalThis)) {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
