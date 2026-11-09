@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AlarmClock, ListChecks, UserRoundCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { StatCard } from "@/components/shared/stat-card";
+import { FilterGroup } from "@/components/shared/filter-group";
 import { requirePagePermission } from "@/lib/auth/organization-context";
 import { createClient } from "@/lib/supabase/server";
 import { getI18n } from "@/lib/i18n/server";
 import { interpolate } from "@/lib/i18n";
 import { parsePageParam } from "@/lib/utils/search-params";
 import { todayInTimeZone } from "@/lib/utils/dates";
-import { cn } from "@/lib/utils/cn";
 import { listMembers } from "@/features/settings/services/members-service";
 import { listProjectOptions } from "@/features/projects/services/project-service";
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskStatus } from "@/features/projects/schemas/project";
@@ -119,25 +118,5 @@ export default async function TasksPage({ searchParams }: PageProps<"/dashboard/
         </>
       )}
     </>
-  );
-}
-
-function FilterGroup({ label, items }: { label: string; items: { key: string; label: string; href: string; active: boolean }[] }) {
-  return (
-    <nav aria-label={label} className="inline-flex rounded-lg border border-border bg-surface p-1 shadow-sm">
-      {items.map((item) => (
-        <Link
-          key={item.key}
-          href={item.href}
-          aria-current={item.active ? "page" : undefined}
-          className={cn(
-            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-            item.active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          {item.label}
-        </Link>
-      ))}
-    </nav>
   );
 }

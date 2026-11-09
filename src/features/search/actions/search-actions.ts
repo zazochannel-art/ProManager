@@ -17,17 +17,17 @@ export interface SearchResult {
 
 const querySchema = z.string().trim().min(2).max(100);
 
-/** Only modules with screens in this phase get a deep link; others land on the module index. */
-function hrefFor(type: SearchEntityType): string {
+/** Every searchable entity has a detail page. */
+function hrefFor(type: SearchEntityType, id: string): string {
   switch (type) {
     case "customer":
-      return "/dashboard/customers";
+      return `/dashboard/customers/${id}`;
     case "project":
-      return "/dashboard/projects";
+      return `/dashboard/projects/${id}`;
     case "invoice":
-      return "/dashboard/invoices";
+      return `/dashboard/invoices/${id}`;
     case "estimate":
-      return "/dashboard/estimates";
+      return `/dashboard/estimates/${id}`;
   }
 }
 
@@ -47,7 +47,7 @@ export async function globalSearchAction(query: unknown): Promise<ActionResult<S
   return ok(
     (data ?? []).map((row) => {
       const type = row.entity_type as SearchEntityType;
-      return { type, id: row.entity_id, title: row.title, subtitle: row.subtitle, href: hrefFor(type) };
+      return { type, id: row.entity_id, title: row.title, subtitle: row.subtitle, href: hrefFor(type, row.entity_id) };
     }),
   );
 }
