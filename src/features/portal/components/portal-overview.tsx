@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CircleCheck, FileText, ReceiptText, TriangleAlert, Wallet } from "lucide-react";
+import { CircleCheck, Download, FileText, Paperclip, ReceiptText, TriangleAlert, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/currency/format";
 import { formatAmountsByCurrency } from "@/lib/currency/amounts";
 import { formatDate } from "@/lib/utils/dates";
 import { ESTIMATE_STATUS_VARIANT, INVOICE_STATUS_VARIANT } from "@/features/invoicing/schemas/document";
+import { formatFileSize } from "@/features/documents/schemas/files";
 import { PROJECT_STATUS_VARIANT, PROJECT_STATUSES, type ProjectStatus } from "@/features/projects/schemas/project";
 import type { PortalAccess, PortalOverview as PortalOverviewData } from "../services/portal-service";
 import { PortalShell } from "./portal-shell";
@@ -182,6 +183,42 @@ export function PortalOverview({ token, access, data, t, locale }: { token: stri
                           </div>
                         ) : null}
                       </dl>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {data.files ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.portal.files}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.files.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t.portal.noFiles}</p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {data.files.map((f) => (
+                    <li key={f.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Paperclip className="size-4" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{f.file_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(f.size_bytes, locale)} · {date(f.created_at)}
+                        </p>
+                      </div>
+                      <a
+                        href={`${base}/files/${f.id}`}
+                        aria-label={interpolate(t.portal.download, { name: f.file_name })}
+                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <Download className="size-4" aria-hidden="true" />
+                      </a>
                     </li>
                   ))}
                 </ul>

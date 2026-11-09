@@ -25,6 +25,9 @@ import { CustomerAddresses } from "@/features/customers/components/customer-addr
 import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
 import { PROJECT_STATUS_VARIANT, type ProjectStatus } from "@/features/projects/schemas/project";
 
+import { listEntityDocuments } from "@/features/documents/services/document-service";
+import { DocumentsCard } from "@/features/documents/components/documents-card";
+
 export const metadata: Metadata = { title: "Customer" };
 
 export default async function CustomerDetailPage({ params }: PageProps<"/dashboard/customers/[id]">) {
@@ -37,10 +40,11 @@ export default async function CustomerDetailPage({ params }: PageProps<"/dashboa
   if (!customer) notFound();
 
   const canSeeProjects = ctx.can("projects.read");
-  const [contacts, addresses, projects] = await Promise.all([
+  const [contacts, addresses, projects, documents] = await Promise.all([
     listCustomerContacts(supabase, ctx.organization.id, id),
     listCustomerAddresses(supabase, ctx.organization.id, id),
     canSeeProjects ? listCustomerProjects(supabase, ctx.organization.id, id) : Promise.resolve([]),
+    ctx.can("documents.read") ? listEntityDocuments(supabase, ctx.organization.id, "customer", id) : Promise.resolve(null),
   ]);
   const canWrite = ctx.can("customers.write");
 
@@ -165,6 +169,7 @@ export default async function CustomerDetailPage({ params }: PageProps<"/dashboa
         <div className="flex flex-col gap-6">
           <CustomerContacts customerId={customer.id} contacts={contacts} canWrite={canWrite} />
           <CustomerAddresses customerId={customer.id} addresses={addresses} canWrite={canWrite} defaultCountry={ctx.organization.country_code} />
+          {documents ? <DocumentsCard entityType="customer" entityId={customer.id} documents={documents} canWrite={ctx.can("documents.write")} canDelete={ctx.can("documents.delete")} /> : null}
         </div>
       </div>
     </>

@@ -34,6 +34,9 @@ import { ProjectTime } from "@/features/projects/components/project-time";
 import { listProjectMembers, listProjectPhases, listProjectTimeEntries } from "@/features/projects/services/project-work-service";
 import { PROJECT_MEMBER_ROLES } from "@/features/projects/schemas/project-work";
 
+import { listEntityDocuments } from "@/features/documents/services/document-service";
+import { DocumentsCard } from "@/features/documents/components/documents-card";
+
 export const metadata: Metadata = { title: "Project" };
 
 const isProjectStatus = (v: string): v is ProjectStatus => (PROJECT_STATUSES as readonly string[]).includes(v);
@@ -52,7 +55,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
   const canSeeTasks = ctx.can("tasks.read");
   const canSeeFinancials = ctx.can("dashboard.financials");
   const canSeeTime = ctx.can("time.read") || ctx.can("time.write_own") || ctx.can("time.manage");
-  const [tasks, members, customers, financials, phases, projectMembers, time] = await Promise.all([
+  const [tasks, members, customers, financials, phases, projectMembers, time, documents] = await Promise.all([
     canSeeTasks ? listProjectTasks(supabase, ctx.organization.id, id) : Promise.resolve([]),
     listMembers(supabase, ctx.organization.id),
     canWrite ? listCustomerOptions(supabase, ctx.organization.id) : Promise.resolve([]),
@@ -60,6 +63,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
     listProjectPhases(supabase, ctx.organization.id, id),
     listProjectMembers(supabase, ctx.organization.id, id),
     canSeeTime ? listProjectTimeEntries(supabase, ctx.organization.id, id) : Promise.resolve(null),
+    ctx.can("documents.read") ? listEntityDocuments(supabase, ctx.organization.id, "project", id) : Promise.resolve(null),
   ]);
 
   const status: ProjectStatus = isProjectStatus(project.status) ? project.status : "planned";
@@ -252,6 +256,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/dashboar
             active={memberOptions}
             canManage={canWrite}
           />
+          {documents ? <DocumentsCard entityType="project" entityId={project.id} documents={documents} canWrite={ctx.can("documents.write")} canDelete={ctx.can("documents.delete")} /> : null}
         </div>
       </div>
     </>

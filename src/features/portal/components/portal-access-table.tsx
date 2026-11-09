@@ -21,6 +21,7 @@ export interface PortalAccessTableRow {
   can_view_invoices: boolean;
   can_view_estimates: boolean;
   can_view_projects: boolean;
+  can_view_documents: boolean;
   expires_at: string;
   last_accessed_at: string | null;
   status: PortalAccessStatus;
@@ -51,7 +52,7 @@ export function PortalAccessTable({ rows }: { rows: PortalAccessTableRow[] }) {
           header: t.clientPortal.columns.shares,
           cell: (info) => {
             const r = info.row.original;
-            const parts = [r.can_view_invoices && t.clientPortal.shareShort.invoices, r.can_view_estimates && t.clientPortal.shareShort.estimates, r.can_view_projects && t.clientPortal.shareShort.projects].filter(Boolean);
+            const parts = [r.can_view_invoices && t.clientPortal.shareShort.invoices, r.can_view_estimates && t.clientPortal.shareShort.estimates, r.can_view_projects && t.clientPortal.shareShort.projects, r.can_view_documents && t.clientPortal.shareShort.documents].filter(Boolean);
             return <span className="text-sm">{parts.join(" · ")}</span>;
           },
         }),
