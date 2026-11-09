@@ -18,10 +18,13 @@ import { InviteMemberForm } from "@/features/organizations/components/invite-mem
 import { TaxRatesPanel } from "@/features/finance/components/tax-rates-panel";
 import { listTaxRates } from "@/features/finance/services/finance-service";
 import { todayInTimeZone } from "@/lib/utils/dates";
+import { getServerEnv } from "@/config/server-env";
+import { NotificationPreferences } from "@/features/notifications/components/notification-preferences";
+import { listNotificationPreferences } from "@/features/notifications/services/notification-service";
 
 export const metadata: Metadata = { title: "Settings" };
 
-const TABS = ["organization", "regional", "taxes", "members", "profile"] as const;
+const TABS = ["organization", "regional", "taxes", "members", "profile", "notifications"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function SettingsPage({ searchParams }: PageProps<"/dashboard/settings">) {
@@ -34,12 +37,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
   const canManageSettings = ctx.can("settings.manage");
   const canManageMembers = ctx.can("members.manage");
 
-  const [members, invitations, logoUrl, taxRates] = await Promise.all([
+  const [members, invitations, logoUrl, taxRates, notificationPrefs] = await Promise.all([
     ctx.can("members.read") ? listMembers(supabase, ctx.organization.id) : Promise.resolve([]),
     canManageMembers ? listPendingInvitations(supabase, ctx.organization.id) : Promise.resolve([]),
     signedLogoUrl(supabase, ctx.organization.logo_path),
     listTaxRates(supabase, ctx.organization.id),
+    listNotificationPreferences(supabase, ctx.organization.id, ctx.user.id),
   ]);
+  const env = getServerEnv();
 
   const o = ctx.organization;
   const readOnlyNote = <p className="mb-4 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">{t.settings.readOnly}</p>;
@@ -148,6 +153,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
                   timezone: toSupportedTimezone(ctx.profile.timezone),
                 }}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.notifications.prefsTitle}</CardTitle>
+              <CardDescription>{t.notifications.prefsDescription}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NotificationPreferences role={ctx.role} rows={notificationPrefs} emailConfigured={Boolean(env.RESEND_API_KEY && env.EMAIL_FROM)} />
             </CardContent>
           </Card>
         </TabsContent>

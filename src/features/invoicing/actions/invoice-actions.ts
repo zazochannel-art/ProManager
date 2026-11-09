@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { interpolate } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { compare } from "@/lib/calculations/decimal";
 import { fail, mapDatabaseError, ok, validationFailure, type ActionResult } from "@/lib/validation/action-result";
 import { invoiceHeaderSchema, paymentSchema, voidSchema } from "../schemas/document";
 import { withDocumentContext } from "./shared";
+import { formatMoney } from "@/lib/currency/format";
+import { notifyLater } from "@/features/notifications/services/notify";
 
 function revalidateInvoices(id?: string) {
   revalidatePath("/dashboard/invoices");
@@ -117,7 +120,7 @@ export async function recordInvoicePaymentAction(invoiceId: string, input: unkno
     const supabase = await createClient();
     const invoice = await supabase
       .from("invoices")
-      .select("customer_id, currency, status, balance_due, allow_overpayment")
+      .select("customer_id, currency, status, balance_due, allow_overpayment, number")
       .eq("organization_id", ctx.organization.id)
       .eq("id", id!)
       .is("deleted_at", null)
@@ -145,6 +148,19 @@ export async function recordInvoicePaymentAction(invoiceId: string, input: unkno
       return fail(code);
     }
     revalidateInvoices(id);
+    const { number, currency } = invoice.data;
+    const named = await supabase.from("customers").select("name").eq("organization_id", ctx.organization.id).eq("id", invoice.data.customer_id).maybeSingle();
+    const customer = named.data?.name ?? "";
+    notifyLater({
+      organizationId: ctx.organization.id,
+      event: "payment.recorded",
+      actorId: ctx.user.id,
+      link: `/dashboard/invoices/${id}`,
+      message: (t, locale) => ({
+        title: interpolate(t.notifications.events["payment.recorded"].title, { amount: formatMoney(v.amount, currency, locale) }),
+        body: interpolate(t.notifications.events["payment.recorded"].body, { customer, number: number ?? "—" }),
+      }),
+    });
     return ok({ paymentId: data });
   });
 }

@@ -24,6 +24,7 @@ import {
   updateMemberRoleSchema,
 } from "../schemas/organization";
 import { advanceFrom, type OnboardingStep } from "../services/onboarding";
+import { notifyLater } from "@/features/notifications/services/notify";
 import { createInvitationToken } from "../services/invitation-token";
 
 const COOKIE_OPTIONS = {
@@ -85,6 +86,22 @@ export async function createOrganizationAction(input: unknown): Promise<ActionRe
   }
   (await cookies()).set(ACTIVE_ORG_COOKIE, data, COOKIE_OPTIONS);
   revalidatePath("/", "layout");
+  const [membership, profile] = await Promise.all([
+    supabase.from("organization_members").select("role").eq("organization_id", data).eq("user_id", user.id).maybeSingle(),
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+  ]);
+  const role = membership.data?.role;
+  const name = profile.data?.full_name || user.email;
+  notifyLater({
+    organizationId: data,
+    event: "member.joined",
+    actorId: user.id,
+    link: "/dashboard/settings?tab=members",
+    message: (t) => ({
+      title: interpolate(t.notifications.events["member.joined"].title, { name }),
+      body: role ? interpolate(t.notifications.events["member.joined"].body, { role: t.roles[role] }) : null,
+    }),
+  });
   return ok({ organizationId: data });
 }
 
@@ -282,6 +299,22 @@ export async function acceptInvitationAction(token: unknown): Promise<ActionResu
   if (error) return fail(mapDatabaseError(error));
   (await cookies()).set(ACTIVE_ORG_COOKIE, data, COOKIE_OPTIONS);
   revalidatePath("/", "layout");
+  const [membership, profile] = await Promise.all([
+    supabase.from("organization_members").select("role").eq("organization_id", data).eq("user_id", user.id).maybeSingle(),
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+  ]);
+  const role = membership.data?.role;
+  const name = profile.data?.full_name || user.email;
+  notifyLater({
+    organizationId: data,
+    event: "member.joined",
+    actorId: user.id,
+    link: "/dashboard/settings?tab=members",
+    message: (t) => ({
+      title: interpolate(t.notifications.events["member.joined"].title, { name }),
+      body: role ? interpolate(t.notifications.events["member.joined"].body, { role: t.roles[role] }) : null,
+    }),
+  });
   return ok({ organizationId: data });
 }
 
