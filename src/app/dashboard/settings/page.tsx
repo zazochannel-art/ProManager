@@ -15,10 +15,13 @@ import { MembersPanel } from "@/features/settings/components/members-panel";
 import { listMembers, listPendingInvitations } from "@/features/settings/services/members-service";
 import { DeleteOrganizationCard } from "@/features/settings/components/delete-organization-card";
 import { InviteMemberForm } from "@/features/organizations/components/invite-member-form";
+import { TaxRatesPanel } from "@/features/finance/components/tax-rates-panel";
+import { listTaxRates } from "@/features/finance/services/finance-service";
+import { todayInTimeZone } from "@/lib/utils/dates";
 
 export const metadata: Metadata = { title: "Settings" };
 
-const TABS = ["organization", "regional", "members", "profile"] as const;
+const TABS = ["organization", "regional", "taxes", "members", "profile"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function SettingsPage({ searchParams }: PageProps<"/dashboard/settings">) {
@@ -31,10 +34,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
   const canManageSettings = ctx.can("settings.manage");
   const canManageMembers = ctx.can("members.manage");
 
-  const [members, invitations, logoUrl] = await Promise.all([
+  const [members, invitations, logoUrl, taxRates] = await Promise.all([
     ctx.can("members.read") ? listMembers(supabase, ctx.organization.id) : Promise.resolve([]),
     canManageMembers ? listPendingInvitations(supabase, ctx.organization.id) : Promise.resolve([]),
     signedLogoUrl(supabase, ctx.organization.logo_path),
+    listTaxRates(supabase, ctx.organization.id),
   ]);
 
   const o = ctx.organization;
@@ -95,6 +99,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
                   timezone: toSupportedTimezone(ctx.settings.timezone),
                 }}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="taxes">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.taxRates.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!canManageSettings ? readOnlyNote : null}
+              <TaxRatesPanel rates={taxRates} canManage={canManageSettings} today={todayInTimeZone(ctx.settings.timezone)} />
             </CardContent>
           </Card>
         </TabsContent>

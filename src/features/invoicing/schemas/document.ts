@@ -74,7 +74,7 @@ const decimalString = (intDigits: number, fraction: number, error: string) => {
     .refine((v) => v === "" || pattern.test(v), { error });
 };
 
-const percentField = (fraction: number) =>
+export const percentField = (fraction: number) =>
   z
     .string()
     .optional()
