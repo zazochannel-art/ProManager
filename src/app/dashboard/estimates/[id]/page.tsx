@@ -156,7 +156,7 @@ export default async function EstimateDetailPage({ params }: PageProps<"/dashboa
           <StatCard label={t.estimates.stats.lines} value={String(lines.length)} icon={ListOrdered} tone="success" />
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="flex flex-col gap-6 lg:col-span-2">
+          <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
             <DocumentLines
               kind="estimate"
               documentId={estimate.id}
@@ -169,7 +169,7 @@ export default async function EstimateDetailPage({ params }: PageProps<"/dashboa
               taxRates={taxRates}
             />
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="flex min-w-0 flex-col gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>{t.invoicing.details}</CardTitle>

@@ -580,7 +580,7 @@ export const en: Dictionary = {
     statuses: { draft: "Draft", issued: "Issued", partially_paid: "Partially paid", paid: "Paid", void: "Void" },
     views: { all: "All", draft: "Drafts", open: "Unpaid", overdue: "Overdue", paid: "Paid", void: "Void" },
     filter: "Filter by status",
-    stats: { outstanding: "To collect", overdue: "Overdue", drafts: "Drafts", openCount: "{count} unpaid invoices", overdueCount: "{count} invoices past due", nothing: "Nothing to collect", dueIn: "due in {days} days", dueToday: "due today", overdueBy: "{days} days overdue" },
+    stats: { outstanding: "To collect", overdue: "Overdue", drafts: "Drafts", openCount: "Unpaid: {count}", overdueCount: "Past due: {count}", nothing: "Nothing to collect", dueIn: "due in {days} days", dueToday: "due today", overdueBy: "{days} days overdue" },
     issue: "Issue invoice",
     issueTitle: "Issue this invoice?",
     issueBody: "The invoice gets the next number in the series and the customer and company details are frozen. It cannot be changed after issuing.",

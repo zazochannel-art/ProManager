@@ -88,7 +88,7 @@ export function DocumentLines({
         ) : (
           <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full min-w-[36rem] text-sm">
-              <thead className="bg-muted/50 text-left text-xs font-medium text-muted-foreground">
+              <thead className="bg-muted/50 text-left text-xs font-medium whitespace-nowrap text-muted-foreground">
                 <tr>
                   <th className="w-8 px-3 py-2 font-medium">#</th>
                   <th className="px-3 py-2 font-medium">{t.invoicing.lines.item}</th>

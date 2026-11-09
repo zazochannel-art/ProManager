@@ -583,7 +583,7 @@ export const ro = {
     statuses: { draft: "Ciornă", issued: "Emisă", partially_paid: "Achitată parțial", paid: "Achitată", void: "Anulată" },
     views: { all: "Toate", draft: "Ciorne", open: "Neachitate", overdue: "Restante", paid: "Achitate", void: "Anulate" },
     filter: "Filtrează după stare",
-    stats: { outstanding: "De încasat", overdue: "Restante", drafts: "Ciorne", openCount: "{count} facturi neachitate", overdueCount: "{count} facturi după scadență", nothing: "Nimic de încasat", dueIn: "scadentă în {days} zile", dueToday: "scadentă azi", overdueBy: "întârziere {days} zile" },
+    stats: { outstanding: "De încasat", overdue: "Restante", drafts: "Ciorne", openCount: "Neachitate: {count}", overdueCount: "După scadență: {count}", nothing: "Nimic de încasat", dueIn: "scadentă în {days} zile", dueToday: "scadentă azi", overdueBy: "întârziere {days} zile" },
     issue: "Emite factura",
     issueTitle: "Emiți factura?",
     issueBody: "Factura primește următorul număr din serie, iar datele clientului și ale firmei se fixează. După emitere nu mai poate fi modificată.",
