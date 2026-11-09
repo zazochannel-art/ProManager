@@ -67,7 +67,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "inventory", href: "/dashboard/inventory", icon: Boxes, group: "operations", permission: "inventory.read", available: true },
   { key: "suppliers", href: "/dashboard/suppliers", icon: Truck, group: "operations", permission: "suppliers.read", available: true },
   { key: "reports", href: "/dashboard/reports", icon: BarChart3, group: "operations", permission: "reports.read", available: true },
-  { key: "clientPortal", href: "/dashboard/client-portal", icon: ShieldCheck, group: "operations", permission: "portal.manage", available: false },
+  { key: "clientPortal", href: "/dashboard/client-portal", icon: ShieldCheck, group: "operations", permission: "portal.manage", available: true },
   { key: "notifications", href: "/dashboard/notifications", icon: Bell, group: "administration", permission: "notifications.read", available: true },
   { key: "settings", href: "/dashboard/settings", icon: Settings, group: "administration", permission: "org.read", available: true },
   { key: "subscription", href: "/dashboard/subscription", icon: Gem, group: "administration", permission: "billing.read", available: true },

@@ -6,8 +6,10 @@ import type { DocumentLine, PrintParty } from "../services/invoicing-service";
 import type { DocumentTotalsRow } from "./document-lines";
 
 /**
- * Print-only layout of an estimate or invoice (hidden on screen). The browser's
- * print dialog turns it into paper or a PDF; nothing is generated server-side.
+ * Paper layout of an estimate or invoice. By default it is print-only (hidden
+ * on screen); `onScreen` also shows it on screen, as the client portal does.
+ * The browser's print dialog turns it into paper or a PDF; nothing is
+ * generated server-side.
  */
 export function PrintableDocument({
   t,
@@ -23,6 +25,7 @@ export function PrintableDocument({
   notes,
   terms,
   footer,
+  onScreen = false,
 }: {
   t: Dictionary;
   locale: Locale;
@@ -37,17 +40,37 @@ export function PrintableDocument({
   notes: string | null;
   terms: string | null;
   footer?: string;
+  onScreen?: boolean;
 }) {
   const money = (v: string) => formatMoney(v, currency, locale);
   const hasDiscount = lines.some((l) => Number(l.discount_percent) > 0);
   return (
-    <article className="hidden text-[11pt] leading-snug text-black print:block" aria-hidden="true">
-      <header className="flex items-start justify-between gap-8 border-b border-black/20 pb-4">
+    <article
+      className={
+        onScreen
+          ? "text-sm leading-snug text-black print:text-[11pt]"
+          : "hidden text-[11pt] leading-snug text-black print:block"
+      }
+      aria-hidden={onScreen ? undefined : true}
+    >
+      <header
+        className={
+          onScreen
+            ? "flex flex-col gap-3 border-b border-black/20 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8 print:flex-row"
+            : "flex items-start justify-between gap-8 border-b border-black/20 pb-4"
+        }
+      >
         <div>
           <p className="text-2xl font-semibold">{heading}</p>
           <p className="mt-1 font-mono text-base">{number}</p>
         </div>
-        <dl className="text-right text-sm">
+        <dl
+          className={
+            onScreen
+              ? "text-sm sm:text-right print:text-right"
+              : "text-right text-sm"
+          }
+        >
           {dates
             .filter((d) => d.value)
             .map((d) => (
@@ -58,41 +81,102 @@ export function PrintableDocument({
             ))}
         </dl>
       </header>
-      <section className="mt-5 grid grid-cols-2 gap-8 text-sm">
+      <section
+        className={
+          onScreen
+            ? "mt-5 grid gap-5 text-sm sm:grid-cols-2 sm:gap-8 print:grid-cols-2"
+            : "mt-5 grid grid-cols-2 gap-8 text-sm"
+        }
+      >
         <Party title={t.invoicing.supplier} party={supplier} t={t} />
-        {customer ? <Party title={t.invoicing.billTo} party={customer} t={t} /> : <div />}
+        {customer ? (
+          <Party title={t.invoicing.billTo} party={customer} t={t} />
+        ) : (
+          <div />
+        )}
       </section>
-      <table className="mt-6 w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-black/40 text-left">
-            <th className="py-1.5 pr-2">#</th>
-            <th className="py-1.5 pr-2">{t.invoicing.lines.item}</th>
-            <th className="py-1.5 pr-2 text-right">{t.invoicing.lines.quantity}</th>
-            <th className="py-1.5 pr-2">{t.invoicing.lines.unit}</th>
-            <th className="py-1.5 pr-2 text-right">{t.invoicing.lines.unitPrice}</th>
-            {hasDiscount ? <th className="py-1.5 pr-2 text-right">{t.invoicing.lines.discountPercent}</th> : null}
-            <th className="py-1.5 pr-2 text-right">{t.invoicing.lines.taxRate}</th>
-            <th className="py-1.5 text-right">{t.invoicing.lines.lineTotal}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map((l, i) => (
-            <tr key={l.id} className="border-b border-black/10 align-top">
-              <td className="py-1.5 pr-2">{i + 1}</td>
-              <td className="py-1.5 pr-2 whitespace-pre-line">{l.description}</td>
-              <td className="py-1.5 pr-2 text-right tabular-nums">{formatNumber(l.quantity, locale, l.quantity.includes(".") ? l.quantity.split(".")[1]!.length : 0)}</td>
-              <td className="py-1.5 pr-2">{l.unit}</td>
-              <td className="py-1.5 pr-2 text-right tabular-nums">{money(l.unit_price)}</td>
-              {hasDiscount ? <td className="py-1.5 pr-2 text-right tabular-nums">{Number(l.discount_percent) > 0 ? `${l.discount_percent}%` : ""}</td> : null}
-              <td className="py-1.5 pr-2 text-right tabular-nums">{l.tax_rate}%</td>
-              <td className="py-1.5 text-right tabular-nums">{money(l.line_total)}</td>
+      <div
+        className={
+          onScreen ? "mt-6 overflow-x-auto print:overflow-visible" : "mt-6"
+        }
+      >
+        <table
+          className={
+            onScreen
+              ? "w-full min-w-[34rem] border-collapse text-sm print:min-w-0"
+              : "w-full border-collapse text-sm"
+          }
+        >
+          <thead>
+            <tr className="border-b border-black/40 text-left">
+              <th className="py-1.5 pr-2">#</th>
+              <th className="py-1.5 pr-2">{t.invoicing.lines.item}</th>
+              <th className="py-1.5 pr-2 text-right">
+                {t.invoicing.lines.quantity}
+              </th>
+              <th className="py-1.5 pr-2">{t.invoicing.lines.unit}</th>
+              <th className="py-1.5 pr-2 text-right">
+                {t.invoicing.lines.unitPrice}
+              </th>
+              {hasDiscount ? (
+                <th className="py-1.5 pr-2 text-right">
+                  {t.invoicing.lines.discountPercent}
+                </th>
+              ) : null}
+              <th className="py-1.5 pr-2 text-right">
+                {t.invoicing.lines.taxRate}
+              </th>
+              <th className="py-1.5 text-right">
+                {t.invoicing.lines.lineTotal}
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <dl className="mt-4 ml-auto w-72 text-sm">
+          </thead>
+          <tbody>
+            {lines.map((l, i) => (
+              <tr key={l.id} className="border-b border-black/10 align-top">
+                <td className="py-1.5 pr-2">{i + 1}</td>
+                <td className="py-1.5 pr-2 whitespace-pre-line">
+                  {l.description}
+                </td>
+                <td className="py-1.5 pr-2 text-right tabular-nums">
+                  {formatNumber(
+                    l.quantity,
+                    locale,
+                    l.quantity.includes(".")
+                      ? l.quantity.split(".")[1]!.length
+                      : 0,
+                  )}
+                </td>
+                <td className="py-1.5 pr-2">{l.unit}</td>
+                <td className="py-1.5 pr-2 text-right tabular-nums">
+                  {money(l.unit_price)}
+                </td>
+                {hasDiscount ? (
+                  <td className="py-1.5 pr-2 text-right tabular-nums">
+                    {Number(l.discount_percent) > 0
+                      ? `${l.discount_percent}%`
+                      : ""}
+                  </td>
+                ) : null}
+                <td className="py-1.5 pr-2 text-right tabular-nums">
+                  {l.tax_rate}%
+                </td>
+                <td className="py-1.5 text-right tabular-nums">
+                  {money(l.line_total)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <dl className="mt-4 ml-auto w-full max-w-72 text-sm">
         <Row label={t.invoicing.subtotal} value={money(totals.subtotal)} />
-        {Number(totals.discount_total) > 0 ? <Row label={t.invoicing.discount} value={`−${money(totals.discount_total)}`} /> : null}
+        {Number(totals.discount_total) > 0 ? (
+          <Row
+            label={t.invoicing.discount}
+            value={`−${money(totals.discount_total)}`}
+          />
+        ) : null}
         <Row label={t.invoicing.tax} value={money(totals.tax_total)} />
         <div className="mt-1 flex justify-between border-t border-black/40 pt-1.5 text-base font-semibold">
           <dt>{t.invoicing.totalDue}</dt>
@@ -106,10 +190,20 @@ export function PrintableDocument({
   );
 }
 
-function Party({ title, party, t }: { title: string; party: PrintParty; t: Dictionary }) {
+function Party({
+  title,
+  party,
+  t,
+}: {
+  title: string;
+  party: PrintParty;
+  t: Dictionary;
+}) {
   return (
     <div>
-      <p className="text-xs font-semibold tracking-wide text-black/60 uppercase">{title}</p>
+      <p className="text-xs font-semibold tracking-wide text-black/60 uppercase">
+        {title}
+      </p>
       <p className="mt-1 font-semibold">{party.name}</p>
       {party.taxId ? (
         <p>
@@ -140,7 +234,9 @@ function Row({ label, value }: { label: string; value: string }) {
 function TextBlock({ title, body }: { title: string; body: string }) {
   return (
     <section className="mt-5 text-sm">
-      <p className="text-xs font-semibold tracking-wide text-black/60 uppercase">{title}</p>
+      <p className="text-xs font-semibold tracking-wide text-black/60 uppercase">
+        {title}
+      </p>
       <p className="mt-1 whitespace-pre-line">{body}</p>
     </section>
   );
