@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/toast";
 import { useRunAction } from "@/hooks/use-run-action";
-import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/client";
 import { interpolate } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils/dates";
@@ -75,8 +74,12 @@ export function DocumentsCard({
       toast.error(`${file.name}: ${actionErrorMessage(t, prepared.error)}`);
       return false;
     }
-    const { error } = await createClient().storage.from("documents").uploadToSignedUrl(prepared.data.path, prepared.data.token, file, { contentType: file.type });
-    if (error) {
+    // A plain PUT to the one-time signed URL, the same request supabase-js sends, without shipping supabase-js to the browser.
+    const body = new FormData();
+    body.append("cacheControl", "3600");
+    body.append("", file);
+    const uploaded = await fetch(prepared.data.uploadUrl, { method: "PUT", headers: { "x-upsert": "false" }, body }).catch(() => null);
+    if (!uploaded?.ok) {
       toast.error(`${file.name}: ${t.documents.uploadFailed}`);
       return false;
     }

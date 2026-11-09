@@ -12,7 +12,6 @@ vi.mock("@/features/documents/actions/document-actions", () => ({
   setDocumentClientVisibleAction: vi.fn(),
   deleteDocumentAction: vi.fn(),
 }));
-vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => "/" }));
 
 const { DocumentsCard } = await import("@/features/documents/components/documents-card");

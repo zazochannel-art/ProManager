@@ -48,7 +48,7 @@ async function loadEntity(supabase: Supabase, organizationId: string, entityType
   return data ? { projectId: null, customerId: data.id } : null;
 }
 
-export async function prepareDocumentUploadAction(input: PrepareUploadInput): Promise<ActionResult<{ path: string; token: string }>> {
+export async function prepareDocumentUploadAction(input: PrepareUploadInput): Promise<ActionResult<{ path: string; uploadUrl: string }>> {
   return withDocumentContext("documents.write", [], async (ctx) => {
     if (!checkRateLimit("upload", ctx.user.id).allowed) return fail("rate_limited");
     const parsed = prepareUploadSchema.safeParse(input);
@@ -62,7 +62,7 @@ export async function prepareDocumentUploadAction(input: PrepareUploadInput): Pr
       logger.warn("documents.signed_upload_failed", { organizationId: ctx.organization.id, message: error?.message });
       return fail("forbidden");
     }
-    return ok({ path: data.path, token: data.token });
+    return ok({ path: data.path, uploadUrl: data.signedUrl });
   });
 }
 
